@@ -5,7 +5,7 @@ slug: livecert
 protocol: generic
 name: LiveCert Operational Signals
 description: >-
-  Two deterministic operational signals. /ssl-check performs a live TLS handshake
+  Three deterministic operational signals. /ssl-check performs a live TLS handshake
   against a domain and reports the certificate that host is actually serving right
   now: valid, expired, self-signed, untrusted, or issued for a different hostname,
   with issuer, validity window and days remaining. Unlike certificate-transparency
@@ -114,9 +114,6 @@ output_schema:
     temp_max_c: { type: [number, "null"] }
     total_precipitation_mm: { type: [number, "null"] }
     precipitation_hours: { type: [integer, "null"] }
-
-docs:
-  repository: https://github.com/Harshyadav442277/livecert
 
 rate_limit_per_sec: 20
 cache_ttl_sec: 60
