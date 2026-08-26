@@ -11,7 +11,7 @@ Tick these off in order; the ordering is dependency order, not preference.
 |---|---|---|---|
 | 1 | Miner service built and tested | Claude | **done** — 23 tests passing |
 | 2 | `miner.yaml` written, schema-prechecked | Claude | **done** |
-| 3 | Deployed to a public HTTPS URL, always-on | **User** | not started |
+| 3 | Deployed to a public HTTPS URL | **User** | **in progress** — Fly.io demanded a card; switched to Vercel (no card, and a live Telegraph miner already runs there) |
 | 4 | `node tools/verify-deploy.mjs <url>` exits 0 | Claude | blocked on 3 |
 | 5 | `base_url` updated in `miner.yaml` | Claude | blocked on 3 |
 | 6 | Sandbox validation passes at integrate.telegraphprotocol.com | Claude | blocked on 3 |
@@ -55,9 +55,10 @@ when they are choosing what to build on.
 ## Deploy commands
 
 ```bash
-# miner — must stay always-on
-cd miner && fly launch --no-deploy --copy-config --name livecert && fly deploy
-node ../tools/verify-deploy.mjs https://livecert.fly.dev
+# miner — Vercel, no payment method required
+npm i -g vercel && vercel login
+cd miner && vercel --prod
+node ../tools/verify-deploy.mjs https://<your-url>.vercel.app
 
 # app — may scale to zero
 cd app && fly launch --no-deploy --copy-config --name certwatch

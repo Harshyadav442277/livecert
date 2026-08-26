@@ -133,7 +133,13 @@ Counts `SSL_VERIFICATION`-classified requests separately.
 and wants an `x402Client.fromConfig({schemes})`. Read the `.d.ts`, not the page.
 
 ### Next action — blocked on the user, both chosen 2026-08-26
-1. **Deploy to Fly.io** (decided) → yields `base_url`. `Dockerfile` + `fly.toml` ready.
+1. **Deploy to Vercel** → yields `base_url`. **Fly.io was tried and rejected: it now demands a
+   payment method before placing any machine.** Switched to Vercel — no card, and the live
+   Telegraph miner `amanat-weather-risk` runs on `amanat-miner.vercel.app`, so it is proven here.
+   The miner was refactored for it: routing lives in `src/handler.ts`, shared by `src/server.ts`
+   (local) and `api/index.ts` (serverless). Fly config is still committed if a card is ever added.
+   Cold starts are not a real risk post-registration — spot checks every ~20s keep it warm, which
+   is exactly how the Render-hosted rank-1 miner stays at 675ms.
 2. **Create an EVM wallet + Base Sepolia testnet ETH** — user has no wallet yet. Claude cannot do
    this: no wallet creation, no seed phrases, no signing. Steps are in SETUP.md.
 

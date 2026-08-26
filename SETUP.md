@@ -7,53 +7,52 @@ opening leaderboard position — every day of delay shortens the record we are j
 
 ---
 
-## Step 1 — Deploy the miner to Fly.io
+## Step 1 — Deploy the miner to Vercel
 
-`Dockerfile` and `fly.toml` are written and committed. This is signup plus two commands.
+**Fly.io now requires a payment method** before it will place a machine, so we switched. Vercel's
+free tier needs no card, and it is proven in this exact ecosystem: the live Telegraph miner
+`amanat-weather-risk` runs on `amanat-miner.vercel.app`.
 
-**1a. Create a Fly.io account** — https://fly.io/app/sign-up
-A card is required for verification. A 256MB shared-cpu machine sits inside the free allowance;
-this will not bill at our size.
+The miner is already restructured for it — `api/index.ts` and `vercel.json` are committed, and the
+routing lives in `src/handler.ts` so the local server and the serverless deployment share one copy.
 
-**1b. Install flyctl** (Windows PowerShell):
-
-```powershell
-iwr https://fly.io/install.ps1 -useb | iex
-```
-
-Then reopen your terminal so `fly` is on PATH.
-
-**1c. Log in:**
+**1a. Install the CLI and log in** (GitHub/Google sign-in, no card):
 
 ```bash
-fly auth login
+npm i -g vercel && vercel login
 ```
 
-**1d. Deploy** — from the `miner/` directory:
+**1b. Deploy from the `miner/` directory:**
 
 ```bash
-cd miner && fly launch --no-deploy --copy-config --name livecert && fly deploy
+cd miner && vercel --prod
 ```
 
-If `livecert` is taken, pick another name and tell me — it has to match `app =` in `fly.toml`.
+Accept the defaults. It will print a URL like `https://livecert.vercel.app`.
 
-**1e. Verify the deployment** — run the acceptance check before anything touches the chain:
+**1c. Verify it** — this runs all three endpoints against the live URL and exits 0 only if
+everything passes. Registration is effectively immutable, so this runs *first*:
 
 ```bash
-node tools/verify-deploy.mjs https://livecert.fly.dev
+node ../tools/verify-deploy.mjs https://livecert.vercel.app
 ```
 
-It exercises all six verdict paths against the live URL, checks input handling, and measures p95
-latency against the spot-check cadence. It exits 0 only if everything passes. Registration is
-effectively immutable, so this runs *first*.
+**Send me that URL** and I will put it into `miner.yaml` and run the console's sandbox validation.
 
-**Send me the URL** and I'll put it into `miner.yaml` and run the console's sandbox validation.
+### On cold starts
 
-> **Do not** set `min_machines_running = 0` or enable `auto_stop_machines`. Telegraph spot-checks
-> every ~20 seconds and revokes routing on a 20% score drop — a cold start reads as a failure.
-> This is exactly why the incumbent on Render is beatable.
+Serverless functions sleep when idle, which sounds fatal given ~20s spot checks. It is not, and we
+measured why: the current rank-1 SSL miner runs on Render's free tier and answered in **675ms
+"cold"** — because Telegraph's own spot checks, every ~20 seconds, keep it permanently warm. Once
+registered, the same applies to us.
 
----
+The gap is *before* registration, when nothing is pinging it. The committed GitHub Actions uptime
+workflow polls every 15 minutes, which covers it.
+
+### If you would rather use Fly.io
+
+Everything for it is still committed (`miner/Dockerfile`, `miner/fly.toml` with
+`min_machines_running = 1`). It only needs a card on file. Vercel is the no-card path.
 
 ## Step 2 — Create an EVM wallet and get Base Sepolia ETH
 
@@ -118,6 +117,9 @@ or it wins nothing regardless of rank.
 ```bash
 cd app && npm install && cp .env.example .env
 ```
+
+CertWatch can also go to Vercel, or run locally — nothing spot-checks it, so its uptime is not
+scored.
 
 Put a **throwaway** Base Sepolia private key holding testnet USDC into `.env` as
 `EVM_PRIVATE_KEY`. It signs x402 payments.
