@@ -162,6 +162,22 @@ committed if a card is ever added.
 `miner.yaml` now points at the deployed URL and re-passes the schema precheck. Re-verified
 2026-08-26: all three intents canonical, `id 4433` and `slug livecert` both still free.
 
+### Repo + monitoring live — 2026-08-26
+`https://github.com/Harshyadav442277/livecert` — **PRIVATE**. Created private deliberately:
+publishing is the user's call, and `docs/MARKET_DATA.md` contains competitive analysis of other
+hackathon entrants' weaknesses. Publishing that under their name mid-competition is a judgement
+they should make, not me.
+
+Repo variable `MINER_BASE_URL` is set, and the **uptime workflow ran successfully from GitHub's
+runners: all 18 checks pass, median 267ms, p95 1013ms**. Add `REGISTRATION_ID` as a repo variable
+once registered so it also watches `activation_status`.
+
+**Caveat if it stays private:** free-tier private repos get 2000 Actions minutes/month; a 15-minute
+cadence is ~2900/month. Either make the repo public (unlimited Actions) or widen the cron.
+
+Secrets scan before the push came back clean — no `.env` tracked, no key-shaped strings, no
+password in history.
+
 ### Next action — blocked on the user
 2. **Create an EVM wallet + Base Sepolia testnet ETH** — user has no wallet yet. Claude cannot do
    this: no wallet creation, no seed phrases, no signing. Steps are in SETUP.md.

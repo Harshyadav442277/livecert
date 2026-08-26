@@ -18,7 +18,7 @@ Tick these off in order; the ordering is dependency order, not preference.
 | 7 | EVM wallet created, Base Sepolia ETH funded | **User** | not started |
 | 8 | `registerMiner` sent | **User** (signs) | blocked on 6, 7 |
 | 9 | `registrationId` recorded; `activation_status: active` | Claude | blocked on 8 |
-| 10 | Uptime workflow armed (`MINER_BASE_URL`, `REGISTRATION_ID` repo vars) | **User** | blocked on 9 |
+| 10 | Uptime workflow armed | Claude | **`MINER_BASE_URL` set and verified green**; add `REGISTRATION_ID` after step 8 |
 | 11 | Posts on X, tagged `@Telegraphprotoc` | **User** | **can start now** — drafts 1–3 need nothing deployed |
 
 **Register as early as possible.** The 7-day grace-period score sets the opening leaderboard
