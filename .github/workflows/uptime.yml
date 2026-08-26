@@ -1,0 +1,71 @@
+# Uptime and routing watch.
+#
+# The rules require the miner to stay "live and operational throughout Track 3"
+# (to 2026-09-07), and Telegraph revokes routing on a 20% score drop with no
+# notification. This checks from outside our machine so a laptop being closed
+# doesn't mean nobody is watching.
+#
+# Set these repository variables/secrets before enabling:
+#   vars.MINER_BASE_URL    e.g. https://livecert.fly.dev
+#   vars.REGISTRATION_ID   the id from the registerMiner receipt (once registered)
+
+name: uptime
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Probe the miner
+        id: probe
+        env:
+          MINER_BASE_URL: ${{ vars.MINER_BASE_URL }}
+          REGISTRATION_ID: ${{ vars.REGISTRATION_ID }}
+        run: |
+          if [ -z "$MINER_BASE_URL" ]; then
+            echo "MINER_BASE_URL is not set — skipping. Set it once the miner is deployed."
+            exit 0
+          fi
+          ARGS="--base-url $MINER_BASE_URL --once"
+          if [ -n "$REGISTRATION_ID" ]; then ARGS="$ARGS --registration-id $REGISTRATION_ID"; fi
+          node tools/watch.mjs $ARGS
+
+      - name: Full acceptance check
+        if: success() && vars.MINER_BASE_URL != ''
+        run: node tools/verify-deploy.mjs "${{ vars.MINER_BASE_URL }}"
+
+      - name: Open an issue if the miner is down
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = 'Miner health check failed';
+            const { data: existing } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'uptime',
+            });
+            const body = `Automated check failed at ${new Date().toISOString()}.\n\n` +
+              `Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\n` +
+              `Spot checks run every ~20s and routing is revoked on a 20% score drop, ` +
+              `so this is likely already costing score.`;
+            if (existing.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title, body, labels: ['uptime'],
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing[0].number, body,
+              });
+            }

@@ -60,7 +60,11 @@ position, so every day of delay shortens the record we are judged on.
 
 ## Phase 4 — Operate through the grace period
 
-- [ ] **T4.1** Build the uptime watcher — poll `activation_status` and alert on revocation. (closes G10)
+- [x] **T4.1** Uptime watching built two ways: `tools/watch.mjs` (local, `--once` for cron) and
+      `.github/workflows/uptime.yml` (every 15 min, opens an issue on failure — survives the laptop
+      being closed, which matters given the miner must stay live to Sep 7). (closes G10)
+- [x] **T4.1b** `tools/verify-deploy.mjs` — post-deploy acceptance check across all six verdict
+      paths plus latency, so a broken deploy is caught *before* the immutable registration.
 - [ ] **T4.2** Watch the first 7 days. Grace period gives an equal share of 5% of traffic; the score
       earned here sets the opening leaderboard position. Zero revocations is the target. (S2)
 - [ ] **T4.3** Tune latency and correctness from observed spot-check behaviour.

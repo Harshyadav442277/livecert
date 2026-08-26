@@ -37,14 +37,17 @@ cd miner && fly launch --no-deploy --copy-config --name livecert && fly deploy
 
 If `livecert` is taken, pick another name and tell me — it has to match `app =` in `fly.toml`.
 
-**1e. Confirm it works:**
+**1e. Verify the deployment** — run the acceptance check before anything touches the chain:
 
 ```bash
-curl "https://livecert.fly.dev/ssl-check?domain=expired.badssl.com"
+node tools/verify-deploy.mjs https://livecert.fly.dev
 ```
 
-You should get `"verdict":"expired"`. **Send me the URL** and I'll put it into `miner.yaml`
-and run the sandbox validation.
+It exercises all six verdict paths against the live URL, checks input handling, and measures p95
+latency against the spot-check cadence. It exits 0 only if everything passes. Registration is
+effectively immutable, so this runs *first*.
+
+**Send me the URL** and I'll put it into `miner.yaml` and run the console's sandbox validation.
 
 > **Do not** set `min_machines_running = 0` or enable `auto_stop_machines`. Telegraph spot-checks
 > every ~20 seconds and revokes routing on a 20% score drop — a cold start reads as a failure.
@@ -147,6 +150,10 @@ burst on the last day.
   badssl.com. ~100ms cold, 12ms cached.
 - `miner.yaml` — passes a local strict-schema precheck. `slug: livecert`, `id: 4433`, both verified free.
 - `tools/watch.mjs` — uptime and revocation watcher, with a `--once` mode for cron.
+- `tools/verify-deploy.mjs` — post-deploy acceptance check. Run before registering.
+- `.github/workflows/` — CI (typecheck + tests on every push) and a 15-minute uptime watch that
+  opens an issue if the miner goes down. Set repo variables `MINER_BASE_URL` and
+  `REGISTRATION_ID` to arm it — it no-ops until then, so pushing now is safe.
 - `app/` — **CertWatch**, the Track 3 application. Dashboard renders, all endpoints tested,
   x402 payment wired against the real SDK.
 - Full planning docs, judging analysis, and the intent decision with its reasoning.

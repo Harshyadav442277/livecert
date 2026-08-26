@@ -73,10 +73,15 @@ Per ARCHITECTURE A9. Cost: our miner **cannot be targeted by ERC-8183 on-chain j
 node has no way to build the call without `on_chain.request`. We serve HTTP and WebSocket traffic
 only. Accepted for H1; this is a real capability we are giving up, not a no-op.
 
-### G10 · No monitoring built yet — `OPEN` (unchanged)
-A3 makes uptime the product, and spot checks run every ~20s, but nothing watches our endpoint. A
-revocation could go unnoticed for a day. Needs at minimum a periodic check of
-`/api/miners/<registrationId>` for `activation_status`.
+### G10 · Monitoring — `CLOSED`
+`tools/watch.mjs` polls both our endpoint and `/api/miners/<registrationId>`; exits non-zero on a
+terminal rejection. `.github/workflows/uptime.yml` runs it every 15 minutes from outside our
+machine and opens an issue on failure — the rules require the miner live through Sep 7, and a
+closed laptop is not a monitoring strategy. `tools/verify-deploy.mjs` gates registration on a full
+acceptance pass.
+
+**Residual:** 15-minute polling against a ~20s spot-check cadence means a revocation can still go
+unnoticed for up to 15 minutes. Acceptable, but not instant.
 
 ## Process risks
 
