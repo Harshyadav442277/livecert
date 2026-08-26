@@ -84,14 +84,18 @@ Track 3 requests or it wins nothing regardless of rank. A genuine app that consu
 - [ ] **T4b.3** *User:* fund a throwaway Base Sepolia wallet with testnet **USDC** and set
       `EVM_PRIVATE_KEY` in `app/.env`. The dashboard already counts `SSL_VERIFICATION`-classified
       requests separately, toward the 100 floor.
-- [ ] **T4b.4** Deploy CertWatch publicly so other people can use it (drives real, non-self demand).
+- [ ] **T4b.4** *User:* deploy CertWatch publicly. Config ready (`app/Dockerfile`, `app/fly.toml`,
+      scale-to-zero is fine here — nothing spot-checks the app). Then get **other people** using it;
+      real demand counts for far more than self-generated traffic.
 
 ## Phase 5 — Build in public (runs in parallel from day 1, not at the end)
 
 - [ ] **T5.1** Start the X log — see [docs/BUILD_IN_PUBLIC.md](docs/BUILD_IN_PUBLIC.md). Judged on
       every track. (G11)
 - [ ] **T5.2** Post at each milestone: intent chosen, endpoint live, registered, first traffic, ranked.
-- [ ] **T5.3** Write the README with an honest Assumptions & Limitations section sourced from GAPS.md.
+- [x] **T5.3** README written with an honest Assumptions & Limitations section sourced from GAPS.md.
+- [x] **T5.3b** [docs/SUBMISSION_CHECKLIST.md](docs/SUBMISSION_CHECKLIST.md) — every item to close,
+      in dependency order, with who owns each.
 - [ ] **T5.4** Submit Track 1 before **2026-08-31**; Track 3 before 2026-09-07. Do not discover the
       submission format on the last day.
 
