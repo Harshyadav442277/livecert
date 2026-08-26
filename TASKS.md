@@ -2,7 +2,11 @@
 
 One task = one change = one commit. Work top-down; the ordering encodes dependencies.
 
-**Deadline: 2026-09-07 12:00 UTC.** Days remaining from 2026-08-26: ~12.
+**Track 1 closes 2026-08-31** — ~5 days from 2026-08-26. (The Sep 7 countdown is Track 3's.)
+The miner must stay live through **2026-09-07** regardless. See [docs/JUDGING.md](docs/JUDGING.md).
+
+**Register as early as possible:** the 7-day grace-period score sets the opening leaderboard
+position, so every day of delay shortens the record we are judged on.
 
 ---
 
@@ -12,8 +16,9 @@ One task = one change = one commit. Work top-down; the ordering encodes dependen
       45 canonical intents; 3 at zero. (closes G3; narrows G1)
 - [x] **T0.2** Read Intents + Build a Scoring Module. Scoring is a WASM module over three plain
       strings; verbose answers are penalised by word-overlap. (closes G4)
-- [ ] **T0.3** Read the [hackathon rules](https://hackathon.telegraphprotocol.com/rules) — eligibility,
-      submission format, team size. Cheap, and invalidates work if wrong. (closes G12)
+- [x] **T0.3** Read the hackathon rules → [docs/JUDGING.md](docs/JUDGING.md). Found three things that
+      changed the plan: Track 1 closes **Aug 31** not Sep 7; scoring is **75% performance + 25% X**;
+      and an intent needs **≥100 Track 3 requests** to be prize-eligible. (closes G12, opens G13)
 - [ ] **T0.4** Pull `example-miner.yaml` from
       [telegraph-usecases](https://github.com/telegraphprotocol/telegraph-usecases). (closes G5)
 - [ ] **T0.5** Re-read the truncated tails of the YAML-config and registration doc pages. (closes G6)
@@ -59,13 +64,27 @@ One task = one change = one commit. Work top-down; the ordering encodes dependen
 - [ ] **T4.3** Tune latency and correctness from observed spot-check behaviour.
 - [ ] **T4.4** Track rank once ranked. (S3, S4)
 
+## Phase 4b — Track 3 application (Aug 31 – Sep 7)
+
+Added to scope 2026-08-26. The eligibility guardrail (G13) means our intent needs ≥100 real
+Track 3 requests or it wins nothing regardless of rank. A genuine app that consumes
+`SSL_VERIFICATION` is the mitigation — and a second $2,000 prize pool.
+
+- [ ] **T4b.1** Design a real TLS-expiry monitoring app on top of the miner. It must be genuinely
+      useful — rule 04 disqualifies artificial metric inflation, so this cannot be a request
+      generator wearing a UI.
+- [ ] **T4b.2** Consume the miner through Telegraph (`/engine/v1/ask` or the MCP server), **not**
+      by calling our own endpoint directly — routed requests are what count.
+- [ ] **T4b.3** Ship it, and track requests attributed to `SSL_VERIFICATION` toward the 100 floor.
+
 ## Phase 5 — Build in public (runs in parallel from day 1, not at the end)
 
 - [ ] **T5.1** Start the X log — see [docs/BUILD_IN_PUBLIC.md](docs/BUILD_IN_PUBLIC.md). Judged on
       every track. (G11)
 - [ ] **T5.2** Post at each milestone: intent chosen, endpoint live, registered, first traffic, ranked.
 - [ ] **T5.3** Write the README with an honest Assumptions & Limitations section sourced from GAPS.md.
-- [ ] **T5.4** Submit before 2026-09-07 12:00 UTC. Do not discover the submission format on the last day.
+- [ ] **T5.4** Submit Track 1 before **2026-08-31**; Track 3 before 2026-09-07. Do not discover the
+      submission format on the last day.
 
 ---
 

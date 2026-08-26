@@ -1,8 +1,11 @@
 # PRD.md — Telegraph Hackathon, Season I / H1
 
 **Status:** scope frozen 2026-08-26. Intent decided: `SSL_VERIFICATION`.
-**Deadline:** 2026-09-07 12:00 UTC — submissions close. ~12 days from 2026-08-26.
-**Track:** 1 — Miner. (Track 2 Script Author and Track 3 Apps are out of scope; see Non-Goals.)
+**Deadline:** **Track 1 closes 2026-08-31** (~5 days from 2026-08-26). The Sep 7 12:00 UTC
+countdown on the landing page is Track 3's close, not ours. The miner must nonetheless stay live
+and operational through **2026-09-07** — that is a rule, not just a scoring input.
+**Track:** 1 — Miner, plus a **Track 3 application** added to scope 2026-08-26 for eligibility
+reasons (see below). Track 2 remains out of scope.
 
 ---
 
@@ -35,11 +38,13 @@ Three structural advantages, all from [TELEGRAPH_FACTS.md](docs/TELEGRAPH_FACTS.
 |---|---|---|
 | S1 | Miner is live | `activation_status: active` at `/api/miners/<registrationId>` |
 | S2 | Survives grace period | 7 days, zero Routing Revocations |
-| S3 | Rank 1 in its intent | Explorer leaderboard at submission time |
+| S3 | Rank 1 in its intent | Explorer leaderboard — worth the **full 75 performance points** |
 | S4 | Demonstrable traffic | Non-trivial served-request count |
-| S5 | Build-in-public log | See [docs/BUILD_IN_PUBLIC.md](docs/BUILD_IN_PUBLIC.md) — an explicit judging criterion |
+| S5 | X engagement | **25% of the total score.** Tagged `@Telegraphprotoc`. See [docs/BUILD_IN_PUBLIC.md](docs/BUILD_IN_PUBLIC.md) |
+| S6 | Intent stays eligible | ≥100 real Track 3 requests to `SSL_VERIFICATION` — see [docs/JUDGING.md](docs/JUDGING.md) |
 
-S1 and S5 are must-haves. S2–S4 are the competitive layer.
+S1, S5 and S6 are must-haves — S6 because no amount of performance rescues an ineligible intent.
+S2–S4 are the competitive layer.
 
 ## In scope
 
@@ -55,7 +60,12 @@ S1 and S5 are must-haves. S2–S4 are the competitive layer.
 Deliberately excluded to protect the deadline:
 
 - **Track 2 (Script Author).** Different skill, separate submission. Revisit for H2 in October.
-- **Track 3 (Applications).** Opens Aug 31, depends on live miners. Out of scope for H1.
+- ~~**Track 3 (Applications).**~~ **Reversed 2026-08-26.** The rules impose an eligibility
+  guardrail: an intent needs ≥3 active miners **and ≥100 real requests from Track 3 applications**
+  to be eligible for cash prizes. We cannot rank our way out of an ineligible intent, and nobody
+  else is obliged to build against `SSL_VERIFICATION`. A genuine Track 3 app that consumes it is
+  now the mitigation — and competes for a second $2,000 pool. Track 3 runs Aug 31–Sep 7, exactly
+  when Track 1 closes, so the windows do not collide. See [docs/JUDGING.md](docs/JUDGING.md).
 - **Multiple miners.** Spreading across intents splits attention; 70/20/10 rewards depth.
 - **`on_chain` block.** ERC-8183 job targeting is optional and unnecessary for ranking. Ship without.
 - **Mainnet.** H1 is Base Sepolia testnet only.

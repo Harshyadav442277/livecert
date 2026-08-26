@@ -52,10 +52,26 @@ reference module scores `matched ÷ total words in the miner's answer`. Verbose 
 **penalised**. Our `reason` is one tight factual sentence on purpose — and SSL Labs returning a
 full grade report is actively hurt by that arithmetic.
 
+### Timeline correction — read this first
+**Track 1 closes 2026-08-31**, not Sep 7 → [docs/JUDGING.md](docs/JUDGING.md). Sep 7 is Track 3's
+close. **~5 days, not 12.** Registering early also matters because the 7-day grace-period score
+sets the opening leaderboard position — every day of delay shortens the record we are judged on.
+
+### Judging is published and explicit
+`75 pts` normalized performance (**your score ÷ the best score in your intent** — so rank 1 in any
+intent gets full marks) + `25 pts` **X engagement**, tagged `@Telegraphprotoc`.
+
+**The biggest risk is the eligibility guardrail:** an intent needs ≥3 active miners *and* **≥100
+real requests from Track 3 applications** to be eligible for cash prizes. `SSL_VERIFICATION` meets
+the first (4 miners once we register) but the second is outside our control — we could rank 1 and
+win nothing if no Track 3 app checks certificates. Mitigation: **build a Track 3 app ourselves
+that genuinely consumes it** (a real TLS expiry monitor, not a request generator — rule 04 forbids
+artificial inflation). That also competes for a second $2,000 pool.
+
 ### Next action — blocked on the user
 **T1.3** — deploy `miner/` to get a public HTTPS URL. `Dockerfile` and `fly.toml` are ready
 (`min_machines_running = 1`, non-negotiable per A3). That URL becomes `base_url` in miner.yaml,
-after which registration can proceed.
+after which registration can proceed. **Urgent** given the Aug 31 close.
 
 ---
 
@@ -63,9 +79,13 @@ after which registration can proceed.
 
 | | |
 |---|---|
-| Deadline | **2026-09-07 12:00 UTC** (H1 submissions close) |
-| Prize | $5K this hackathon; $15K across Season I (H1 Sep, H2 mid-Oct, H3 mainnet Dec) |
-| Track 3 opens | **2026-08-31** — applications built on live miners |
+| **Track 1 (ours) closes** | **2026-08-31** — ~5 days. NOT Sep 7. |
+| Track 3 (Applications) | 2026-08-31 → 2026-09-07 |
+| Miner must stay live until | **2026-09-07** (rule: live throughout Track 3) |
+| Prize | Miner track **$2,000** ($1000/$600/$400). App track $2,000. Script $1,000. |
+| Scoring | **75% normalized performance + 25% X engagement** |
+| Eligibility guardrail | intent needs **≥3 miners AND ≥100 Track 3 requests** |
+
 | Chain | **Base Sepolia** (testnet — gas only, no bond, no stake) |
 | Diamond | `0x5a2324aA18613FAD4e44bDF0d6c73Ec1f6D87ff8` |
 | Routing | 70% / 20% / 10% to ranks 1/2/3, **nothing to 4th** |

@@ -83,6 +83,22 @@ requests served" — both demand-side, neither controlled by code quality.
 [docs/BUILD_IN_PUBLIC.md](docs/BUILD_IN_PUBLIC.md) sketches a cadence; it is not being executed yet.
 **Honest read:** this is the part most likely to be neglected and it is weighted like the rest.
 
-### G12 · Hackathon rules page unread — `OPEN`
-https://hackathon.telegraphprotocol.com/rules — eligibility, submission format, and team rules
-have not been checked. Cheap to close, and the kind of thing that invalidates work if wrong.
+### G12 · Hackathon rules — `CLOSED` → [docs/JUDGING.md](docs/JUDGING.md)
+Worth having read early: it corrected our deadline by a week (Track 1 closes **Aug 31**, not Sep 7),
+revealed the exact scoring split (**75% performance / 25% X**), and surfaced G13 below.
+
+### G13 · Our intent may not be prize-eligible — `OPEN` · **highest-severity open risk**
+> An Intent must have at least 3 active Miners **and receive at least 100 real requests from
+> Track 3 applications** to be eligible for global cash prizes.
+
+`SSL_VERIFICATION` clears the first condition (4 miners once we register). The second is
+**entirely outside our control**: it depends on other people choosing to build applications that
+check SSL certificates. We can hold rank 1 with a flawless score and win nothing.
+
+**Mitigation in scope:** build a Track 3 application ourselves that genuinely consumes the intent
+(Phase 4b). Bounded honestly — rule 04 disqualifies artificial metric inflation, so it must be a
+real product with a real reason to check certificates, not a request generator.
+
+**Residual risk:** even so, 100 requests is a floor we may not reach alone, and we cannot verify
+the current count for our intent — no published per-intent Track 3 request counter has been found.
+This is the single most likely way the project produces excellent work and zero prize.

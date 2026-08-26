@@ -1,33 +1,38 @@
 # BUILD_IN_PUBLIC.md — the judged social layer
 
-This file exists because **posting is a scored criterion, not marketing.** It is the part of a
-hackathon engineers reliably neglect, and here it is weighted alongside the code.
+This file exists because **posting is 25% of the score.** Not a tiebreaker, not marketing — a
+quarter of the total, published in the rules. It is the part of a hackathon engineers reliably
+neglect, and here it outweighs every implementation detail combined.
 
 ---
 
 ## What is actually being judged
 
-From the [hackathon page](https://hackathon.telegraphprotocol.com), Track 1 (Miner):
+From the [rules page](https://hackathon.telegraphprotocol.com/rules), Track 1 is scored out of 100:
 
-> Telegraph ranking & performance
-> Number of applications built on your Miner
-> Total requests served
-> **Progress updates posted on X**
-> **Engagement & reach on those posts**
+```
+75 pts   Normalized Performance   (your score ÷ the best score in your intent)
+25 pts   Engagement & Updates on X
+```
 
-Five criteria. **Two are social. Two more are demand-side** — applications built on our miner, and
-requests served — and neither is won by code quality alone. Someone has to know the miner exists.
+Because the best miner in an intent automatically gets the **full 75**, the performance half
+saturates the moment we hold rank 1. Past that point, **X is the only axis left to compete on.**
 
-Only *one* of the five is the thing engineers instinctively optimize.
+Two hard requirements from the rules:
 
-## The compounding bit
+- Updates must be **publicly posted on X** and **tagged `@Telegraphprotoc`**.
+- Judged on *"quality, consistency, reach, and meaningful engagement"* — so cadence and substance
+  both count, and a burst of posts on the final day scores badly on consistency.
 
-Track 3 (Applications) opens **Aug 31** and those builders need miners to build on. They will pick
-from whatever is visible and looks maintained. A miner nobody has heard of gets zero applications
-built on it, which costs a judging criterion directly and costs served-request volume indirectly.
+## Posting also protects prize eligibility
 
-So the posting is not adjacent to the technical work — it feeds two of the other criteria. Posting
-before Aug 31 matters more than posting after.
+An intent is only eligible for cash prizes if it receives **≥100 real requests from Track 3
+applications** (G13). Track 3 opens **Aug 31**, and those builders pick miners that are visible and
+look maintained.
+
+So posting is not adjacent to the technical work — it is one of the two levers on the guardrail
+that decides whether any of this is eligible at all. **Posting before Aug 31 matters far more than
+posting after**, because that is when Track 3 builders are choosing what to build on.
 
 ## Cadence
 
