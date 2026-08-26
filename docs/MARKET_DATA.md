@@ -91,3 +91,66 @@ before it went out.
 - **No per-intent Track 3 request counter** exists yet, so G13 progress cannot be tracked directly.
 - `total_requests_served` is lifetime and includes Daemon traffic; none of it is Track 3 demand,
   since Track 3 opens 2026-08-31.
+
+---
+
+## The scoring picture — why our two intents are the right cells
+
+**83% of all scored entries on the network are below 0.05.** A handful reach 0.99. The spread is
+not explained by response shape: `chainsight-oracle` uses one `signal_mapping` across 11 intents
+and scores **0.990 in `WALLET_BALANCE_CHECK` and 0.000–0.07 in the other ten**. Whatever the
+scorer rewards, it is per-intent question-matching, not a universally "correct" JSON shape.
+
+Every weather-family score, epoch 283:
+
+```
+STORM_ALERT        0.0066  bittensor-sn18-zeus      label_field: model
+                   0.0058  amanat-weather-risk      label: summary
+                   0.0000  skywire-storm-alert      label: level
+
+WEATHER_CHECK      0.7676  weatherapi               label: current
+                   0.6374  skywire-weather-check    label: condition
+                   0.0184  openweathermap
+                   ...five more below 0.017
+
+WEATHER_FORECAST   0.0080  onlookout-weather   ← rank 1 of NINE miners
+                   0.0077  skywire-forecast
+                   ...all nine below 0.008
+```
+
+### The insight that makes this winnable
+
+Judging is **normalized**: `75 pts × (your average score ÷ the best average score in your intent)`.
+The best miner in an intent gets the full 75 **regardless of its absolute score**.
+
+So the number that matters is not "can we score well" but "can we beat the incumbent in *this*
+intent". Those bars:
+
+| Our intent | Bar to beat for rank 1 |
+|---|---|
+| `STORM_ALERT` | **0.0066** |
+| `SSL_VERIFICATION` | **0.0063** |
+
+Compare `WEATHER_CHECK` (0.768) or `WALLET_BALANCE_CHECK` (0.992), where a real incumbent is
+already answering well. **Our two intents have the lowest bars on the board**, and rank 1 in them
+is worth exactly as many points as rank 1 in a hard one.
+
+`WEATHER_FORECAST` is instructive: 941 requests, the highest demand on the network, and **nine
+miners all scoring under 0.008**. High demand did not attract competent answers. It remains a
+candidate if we want a third intent, though nine competitors for a 70/20/10 split is worse odds
+than three.
+
+### Who currently holds rank 1 in our intents
+
+- `STORM_ALERT` — `bittensor-sn18-zeus`, at 0.0066, mapping **`label_field: model`**. Its label is
+  the *model's name*, not a storm assessment. It holds rank 1 while answering the question with
+  metadata.
+- `SSL_VERIFICATION` — `txlens`, at 0.0063, mapping `label_field: status` whose value is `"ok"`.
+
+Ours map `label_field: verdict`, whose value is the actual finding (`moderate`, `expired`, …),
+with a `reason` sentence carrying the location/domain, the grade, and the numbers behind it.
+
+**Stated honestly:** this is a reasoned bet, not a measured result. The champion scoring modules
+are unpublished, and `skywire-storm-alert` maps a sensible `label_field: level` yet scores 0.0000 —
+so a sensible mapping is clearly not sufficient on its own. We will not know until we are scored.
+After being wrong about cold starts today, that distinction is worth keeping explicit.

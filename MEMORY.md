@@ -99,6 +99,23 @@ starts. Measured 675ms cold / 324ms warm — **no cold start**, because ~20s spo
 permanently warm. TxLens also does a real TLS handshake. Claim retracted in docs and in the draft
 X post before it was posted.
 
+### Why the two chosen intents are winnable
+Judging normalizes: **75 pts × (your score ÷ best score in your intent)** — so rank 1 gets the full
+75 *regardless of absolute score*. The only number that matters is the bar in our own intent:
+
+```
+STORM_ALERT       beat 0.0066   (held by bittensor-sn18-zeus, label_field: model)
+SSL_VERIFICATION  beat 0.0063   (held by txlens, label_field: status = "ok")
+```
+
+Both are the **lowest bars on the board**. Compare WEATHER_CHECK (0.768) or
+WALLET_BALANCE_CHECK (0.992), where a real incumbent already answers well.
+
+83% of all network scores are below 0.05. And shape is not the driver: `chainsight-oracle` uses one
+mapping across 11 intents and scores 0.990 in one, ~0.00–0.07 in the other ten. Also note
+`skywire-storm-alert` maps a sensible `label_field: level` and still scores 0.0000 — **a sensible
+mapping is not sufficient**. Our edge is a reasoned bet, not a measured result.
+
 ### Built: `CertWatch` (Track 3 app)
 [app/](app/) — TLS expiry monitor. ESM Node + viem + `@x402/fetch`/`@x402/evm`, dashboard tested
 and rendering. Uses the **auto-routed** `/engine/v1/ask` so Telegraph's router classifies the
