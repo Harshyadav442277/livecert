@@ -68,10 +68,22 @@ win nothing if no Track 3 app checks certificates. Mitigation: **build a Track 3
 that genuinely consumes it** (a real TLS expiry monitor, not a request generator — rule 04 forbids
 artificial inflation). That also competes for a second $2,000 pool.
 
-### Next action — blocked on the user
-**T1.3** — deploy `miner/` to get a public HTTPS URL. `Dockerfile` and `fly.toml` are ready
-(`min_machines_running = 1`, non-negotiable per A3). That URL becomes `base_url` in miner.yaml,
-after which registration can proceed. **Urgent** given the Aug 31 close.
+### Also built
+- `tools/watch.mjs` — uptime + routing-revocation watcher. `--once` mode for cron; exits non-zero
+  on failure or terminal rejection.
+- [SETUP.md](SETUP.md) — the two manual steps, written out precisely.
+- [docs/X_POSTS.md](docs/X_POSTS.md) — 8 drafts. Posts 1–3 are postable now (they are insights,
+  not status updates, which is what actually earns reach). Post 7 targets Track 3 builders before
+  Aug 31 and is doing eligibility work, not marketing.
+- Root [README.md](README.md) with an honest limitations section.
+
+### Next action — blocked on the user, both chosen 2026-08-26
+1. **Deploy to Fly.io** (decided) → yields `base_url`. `Dockerfile` + `fly.toml` ready.
+2. **Create an EVM wallet + Base Sepolia testnet ETH** — user has no wallet yet. Claude cannot do
+   this: no wallet creation, no seed phrases, no signing. Steps are in SETUP.md.
+
+Once the URL exists: put it in `miner.yaml`, sandbox-validate at integrate.telegraphprotocol.com,
+then the **user** sends `registerMiner`. Capture `registrationId` into the table below.
 
 ---
 
