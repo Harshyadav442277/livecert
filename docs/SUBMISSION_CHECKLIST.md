@@ -11,10 +11,10 @@ Tick these off in order; the ordering is dependency order, not preference.
 |---|---|---|---|
 | 1 | Miner service built and tested | Claude | **done** — 23 tests passing |
 | 2 | `miner.yaml` written, schema-prechecked | Claude | **done** |
-| 3 | Deployed to a public HTTPS URL | **User** | **in progress** — Fly.io demanded a card; switched to Vercel (no card, and a live Telegraph miner already runs there) |
-| 4 | `node tools/verify-deploy.mjs <url>` exits 0 | Claude | blocked on 3 |
-| 5 | `base_url` updated in `miner.yaml` | Claude | blocked on 3 |
-| 6 | Sandbox validation passes at integrate.telegraphprotocol.com | Claude | blocked on 3 |
+| 3 | Deployed to a public HTTPS URL | Claude | **done** — `https://miner-wine.vercel.app` |
+| 4 | `node tools/verify-deploy.mjs <url>` exits 0 | Claude | **done** — all 18 checks pass |
+| 5 | `base_url` updated in `miner.yaml` | Claude | **done** |
+| 6 | Sandbox validation at integrate.telegraphprotocol.com | Claude | ready to run — needs the console |
 | 7 | EVM wallet created, Base Sepolia ETH funded | **User** | not started |
 | 8 | `registerMiner` sent | **User** (signs) | blocked on 6, 7 |
 | 9 | `registrationId` recorded; `activation_status: active` | Claude | blocked on 8 |

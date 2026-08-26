@@ -17,7 +17,7 @@ description: >-
   /weather-forecast reports future conditions for a location over a stated window:
   the expected condition in plain words, temperature range, total precipitation and
   peak wind. All three answers are deterministic and independently checkable.
-base_url: https://livecert.fly.dev
+base_url: https://miner-wine.vercel.app
 
 endpoints:
   - path: /ssl-check

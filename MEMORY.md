@@ -132,14 +132,20 @@ Counts `SSL_VERIFICATION`-classified requests separately.
 `createSigner` from `@x402/evm`; the shipped 2.23.0 exports `toClientEvmSigner(account, publicClient)`
 and wants an `x402Client.fromConfig({schemes})`. Read the `.d.ts`, not the page.
 
-### Next action — blocked on the user, both chosen 2026-08-26
-1. **Deploy to Vercel** → yields `base_url`. **Fly.io was tried and rejected: it now demands a
-   payment method before placing any machine.** Switched to Vercel — no card, and the live
-   Telegraph miner `amanat-weather-risk` runs on `amanat-miner.vercel.app`, so it is proven here.
-   The miner was refactored for it: routing lives in `src/handler.ts`, shared by `src/server.ts`
-   (local) and `api/index.ts` (serverless). Fly config is still committed if a card is ever added.
-   Cold starts are not a real risk post-registration — spot checks every ~20s keep it warm, which
-   is exactly how the Render-hosted rank-1 miner stays at 675ms.
+### DEPLOYED 2026-08-26 — `https://miner-wine.vercel.app`
+Live on Vercel, **all 18 acceptance checks pass** (`node tools/verify-deploy.mjs <url>`).
+Median 482ms, p95 1200ms. TLS handshake works from serverless — that was the main technical risk.
+
+Fly.io was tried first and rejected: it now demands a payment method before placing any machine.
+Vercel needs no card, and the live Telegraph miner `amanat-weather-risk` already runs there.
+The miner was refactored for it — routing lives in `src/handler.ts`, shared by `src/server.ts`
+(local) and `api/index.ts` (serverless), so neither target has a divergent copy. Fly config stays
+committed if a card is ever added.
+
+`miner.yaml` now points at the deployed URL and re-passes the schema precheck. Re-verified
+2026-08-26: all three intents canonical, `id 4433` and `slug livecert` both still free.
+
+### Next action — blocked on the user
 2. **Create an EVM wallet + Base Sepolia testnet ETH** — user has no wallet yet. Claude cannot do
    this: no wallet creation, no seed phrases, no signing. Steps are in SETUP.md.
 
