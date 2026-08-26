@@ -80,7 +80,15 @@ Consider using a **fresh wallet** for this hackathon rather than one holding rea
 
 A fraction of an ETH is plenty; registration is one transaction and there is **no bond or stake**.
 
-**2d. Confirm** the balance shows on Base Sepolia in MetaMask, then tell me.
+**2d. Also get testnet USDC** — a *separate* token from ETH, needed by the Track 3 app (step 5),
+not by registration. Telegraph charges ~$0.01 per engine call via x402.
+
+- Circle faucet: https://faucet.circle.com (select **Base Sepolia**)
+- Token contract: `0x036CbD53842c5426634e7929541eC2318f3dCF7e`
+
+$5–10 of testnet USDC covers hundreds of calls.
+
+**2e. Confirm** both balances show on Base Sepolia in MetaMask, then tell me.
 
 ---
 
@@ -95,6 +103,31 @@ Once steps 1 and 2 are done:
 
 I do not connect wallets or send transactions. I'll have everything staged so your part is
 reviewing and clicking.
+
+---
+
+## Step 5 — Run CertWatch (the Track 3 app)
+
+Built and working: [app/](app/) — a TLS expiry monitor that asks Telegraph about certificates.
+This exists because of the eligibility guardrail: our intent needs **≥100 real Track 3 requests**
+or it wins nothing regardless of rank.
+
+```bash
+cd app && npm install && cp .env.example .env
+```
+
+Put a **throwaway** Base Sepolia private key holding testnet USDC into `.env` as
+`EVM_PRIVATE_KEY`. It signs x402 payments.
+
+> Never paste that key to me, never commit it. `.env` is gitignored. Use a wallet that holds
+> nothing real — ideally a different one from your registration wallet.
+
+```bash
+npm run build && npm start     # dashboard on http://localhost:3000
+```
+
+Add domains and it starts checking. Later, **deploy it publicly** so other people can use it —
+demand from real users counts for far more than demand you generate yourself.
 
 ---
 
@@ -113,5 +146,7 @@ burst on the last day.
 - `miner/` — the service. Node, zero runtime dependencies, all six verdicts verified against
   badssl.com. ~100ms cold, 12ms cached.
 - `miner.yaml` — passes a local strict-schema precheck. `slug: livecert`, `id: 4433`, both verified free.
-- `tools/watch.mjs` — uptime and revocation watcher.
+- `tools/watch.mjs` — uptime and revocation watcher, with a `--once` mode for cron.
+- `app/` — **CertWatch**, the Track 3 application. Dashboard renders, all endpoints tested,
+  x402 payment wired against the real SDK.
 - Full planning docs, judging analysis, and the intent decision with its reasoning.

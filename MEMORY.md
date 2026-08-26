@@ -77,6 +77,16 @@ artificial inflation). That also competes for a second $2,000 pool.
   Aug 31 and is doing eligibility work, not marketing.
 - Root [README.md](README.md) with an honest limitations section.
 
+### Built: `CertWatch` (Track 3 app)
+[app/](app/) — TLS expiry monitor. ESM Node + viem + `@x402/fetch`/`@x402/evm`, dashboard tested
+and rendering. Uses the **auto-routed** `/engine/v1/ask` so Telegraph's router classifies the
+query and demand lands on the *intent* (what the G13 guardrail counts), not on our miner directly.
+Counts `SSL_VERIFICATION`-classified requests separately.
+
+**Gotcha worth remembering:** the Telegraph docs are **drifted from their own SDK**. Docs say
+`createSigner` from `@x402/evm`; the shipped 2.23.0 exports `toClientEvmSigner(account, publicClient)`
+and wants an `x402Client.fromConfig({schemes})`. Read the `.d.ts`, not the page.
+
 ### Next action — blocked on the user, both chosen 2026-08-26
 1. **Deploy to Fly.io** (decided) → yields `base_url`. `Dockerfile` + `fly.toml` ready.
 2. **Create an EVM wallet + Base Sepolia testnet ETH** — user has no wallet yet. Claude cannot do
