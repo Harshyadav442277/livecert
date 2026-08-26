@@ -77,6 +77,28 @@ artificial inflation). That also competes for a second $2,000 pool.
   Aug 31 and is doing eligibility work, not marketing.
 - Root [README.md](README.md) with an honest limitations section.
 
+### Major correction: demand, not just occupancy → now serving TWO intents
+Live data from `/api/miners` (89 miners, exposes `total_requests_served` + `scores`) →
+[docs/MARKET_DATA.md](docs/MARKET_DATA.md).
+
+**The whole network has served 1,574 requests. `SSL_VERIFICATION` has 17.**
+`STORM_ALERT` has **334** with the same 3-miner field and the same near-zero top score (0.0066).
+
+The original analysis optimised for low occupancy alone. But G13 needs **≥100 Track 3 requests to
+the intent** — ranking first in a dead intent pays nothing. The miner now serves **both**
+`SSL_VERIFICATION` and `STORM_ALERT` from one deployment (`/ssl-check`, `/storm-alert`): one Fly
+app, one registration, two eligibility paths. TxLens proves one miner can rank in several intents.
+
+**Live SSL_VERIFICATION leaderboard, epoch 283:** txlens 0.0063 (rank 1), ssllabs 0.0042,
+certspotter 0.0000. The bar is extremely low. Notably `ssllabs` maps `label_field: host` and
+`txlens` maps `label_field: status` (value `"ok"`) — neither is a verdict. Ours maps
+`label_field: verdict`. Possible real edge, but inference about an unpublished scorer, not fact.
+
+**We were wrong about something and fixed it:** we claimed TxLens was beatable on Render cold
+starts. Measured 675ms cold / 324ms warm — **no cold start**, because ~20s spot checks keep it
+permanently warm. TxLens also does a real TLS handshake. Claim retracted in docs and in the draft
+X post before it was posted.
+
 ### Built: `CertWatch` (Track 3 app)
 [app/](app/) — TLS expiry monitor. ESM Node + viem + `@x402/fetch`/`@x402/evm`, dashboard tested
 and rendering. Uses the **auto-routed** `/engine/v1/ask` so Telegraph's router classifies the

@@ -1,5 +1,6 @@
 import * as http from "node:http";
 import { checkCertificate, normalizeTarget, type SslResult } from "./ssl";
+import { checkStorm, type StormResult } from "./storm";
 
 const PORT = Number(process.env.PORT ?? 8080);
 const CACHE_TTL_MS = Number(process.env.CACHE_TTL_MS ?? 60_000);
@@ -10,9 +11,9 @@ const MAX_CACHE = 500;
  * repeat checks of the same host sub-millisecond without ever serving a stale
  * verdict for longer than the spot-check interval.
  */
-const cache = new Map<string, { at: number; value: SslResult }>();
+const cache = new Map<string, { at: number; value: SslResult | StormResult }>();
 
-function fromCache(key: string): SslResult | null {
+function fromCache(key: string): SslResult | StormResult | null {
   const hit = cache.get(key);
   if (!hit) return null;
   if (Date.now() - hit.at > CACHE_TTL_MS) {
@@ -22,7 +23,7 @@ function fromCache(key: string): SslResult | null {
   return hit.value;
 }
 
-function toCache(key: string, value: SslResult): void {
+function toCache(key: string, value: SslResult | StormResult): void {
   if (cache.size >= MAX_CACHE) {
     const oldest = cache.keys().next().value;
     if (oldest !== undefined) cache.delete(oldest);
@@ -56,8 +57,42 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (path === "/storm-alert") {
+    const q =
+      url.searchParams.get("location") ??
+      url.searchParams.get("place") ??
+      url.searchParams.get("city") ??
+      url.searchParams.get("query") ??
+      "";
+    if (!q.trim()) {
+      send(res, 400, {
+        error: "invalid_location",
+        message: "Name a location. Example: /storm-alert?location=Chennai",
+      });
+      return;
+    }
+    const key = `storm:${q.trim().toLowerCase()}`;
+    const hit = fromCache(key);
+    if (hit) {
+      send(res, 200, hit);
+      return;
+    }
+    checkStorm(q)
+      .then((result) => {
+        toCache(key, result);
+        send(res, 200, result);
+      })
+      .catch((e: unknown) => {
+        send(res, 502, { error: "check_failed", message: (e as Error).message });
+      });
+    return;
+  }
+
   if (path !== "/ssl-check") {
-    send(res, 404, { error: "not_found", message: "Try /ssl-check?domain=example.com" });
+    send(res, 404, {
+      error: "not_found",
+      message: "Try /ssl-check?domain=example.com or /storm-alert?location=Chennai",
+    });
     return;
   }
 
@@ -78,7 +113,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  const key = `${target.host}:${target.port}`;
+  const key = `ssl:${target.host}:${target.port}`;
   const cached = fromCache(key);
   if (cached) {
     send(res, 200, cached);

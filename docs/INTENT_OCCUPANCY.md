@@ -60,13 +60,18 @@ Tier A, 3 incumbents, and **all three have a specific, exploitable weakness**:
 
 | # | Miner | `base_url` | Weakness |
 |---|---|---|---|
-| 9002 | **TxLens** | `…onrender.com` | **Render** — cold starts against a ~20s spot-check cadence. SSL is 1 of its 8 capabilities, so it is a side feature, not a specialty. |
+| 9002 | **TxLens** | `…onrender.com` | ~~Render cold starts~~ — **this was wrong, see [MARKET_DATA.md](MARKET_DATA.md)**. Measured 675ms cold / 324ms warm; ~20s spot checks keep it permanently warm. It also does a real TLS handshake. A stronger competitor than assessed. |
 | 10 | **certspotter-cert-verification** | `api.certspotter.com` | Answers from **certificate-transparency logs** — what was *issued*, not what is *deployed*. Wrong whenever a host still serves an old cert. |
 | 227 | **ssllabs** | `api.ssllabs.com/api/v3` | A full **Qualys SSL Labs assessment takes 60–120s** on an uncached host, plus strict rate limits. Catastrophic against 20s spot checks. |
 
-Ours answers with a **live TLS handshake** in ~100ms cold and ~12ms cached, on always-on
-infrastructure, with **no upstream API at all** — so no third-party rate limit or outage can
-trigger a Routing Revocation against us. See [../miner/README.md](../miner/README.md).
+Ours answers with a **live TLS handshake** in ~80ms, with **no upstream API at all** for the TLS
+path — so no third-party rate limit or outage can trigger a Routing Revocation against us.
+See [../miner/README.md](../miner/README.md).
+
+**Superseded in part:** demand data (see [MARKET_DATA.md](MARKET_DATA.md)) later showed
+`SSL_VERIFICATION` has only 17 lifetime requests against `STORM_ALERT`'s 334. The miner now serves
+**both** intents from one deployment, because an intent with no demand cannot clear the ≥100
+Track 3 request guardrail no matter how well we rank.
 
 Two further reasons it fits Tier A exact-match scoring:
 

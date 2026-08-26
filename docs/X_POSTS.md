@@ -86,8 +86,23 @@ This one is doing real work: an intent needs **≥100 real Track 3 requests** to
 >
 > If you're building anything that touches domains, `livecert` gives you real TLS cert status:
 > valid / expired / self-signed / hostname-mismatch / untrusted, with issuer and days-remaining.
+> It also does 48h severe-weather risk for any location, graded on Beaufort gust thresholds.
 >
-> Intent: `SSL_VERIFICATION`. Free to call. Ask me anything.
+> Intents: `SSL_VERIFICATION` and `STORM_ALERT`. Free to call. Ask me anything.
+
+## Post 4b — the measurement that proved me wrong (ready now)
+
+The most credible post available, because it costs something to make.
+
+> I assumed the incumbent SSL miner on @Telegraphprotoc was beatable because it runs on Render
+> and would cold-start.
+>
+> Measured it: 675ms cold, 324ms warm. No cold start at all.
+>
+> Obvious in hindsight — validators spot-check every ~20s, so the instance never goes idle.
+> The cadence I thought was a threat to them is what protects them.
+>
+> Had to rewrite my whole pitch.
 
 ## Post 8 — ranked (**after** grace period ends)
 

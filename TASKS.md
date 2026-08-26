@@ -43,8 +43,11 @@ position, so every day of delay shortens the record we are judged on.
 - [x] **T2.3** No `limitations[]` needed — we have no third-party upstream, so no account quota
       to declare. This is a direct benefit of D2.
 - [x] **T2.4** No `errors` block — our service uses real HTTP status codes, never a liar-200 (A5).
-- [ ] **T2.5** Verify every declared intent with `isCanonicalIntent(string)`. Exact case. One bad
-      string reverts the whole transaction.
+- [x] **T2.5** Both `SSL_VERIFICATION` and `STORM_ALERT` confirmed canonical against the live
+      `/engine/v1/intents` set (45 intents). Re-verify with `isCanonicalIntent` before sending —
+      one bad string reverts the whole transaction.
+- [x] **T2.7** Added `STORM_ALERT` after measuring demand → [docs/MARKET_DATA.md](docs/MARKET_DATA.md).
+      `/storm-alert` endpoint built, 32 tests passing, YAML declares both intents.
 - [ ] **T2.6** Sandbox-validate at `integrate.telegraphprotocol.com` until every endpoint passes. (A2)
 
 ## Phase 3 — Register (user drives all wallet steps)

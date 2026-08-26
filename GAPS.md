@@ -96,7 +96,14 @@ requests served" — both demand-side, neither controlled by code quality.
 Worth having read early: it corrected our deadline by a week (Track 1 closes **Aug 31**, not Sep 7),
 revealed the exact scoring split (**75% performance / 25% X**), and surfaced G13 below.
 
-### G13 · Our intent may not be prize-eligible — `OPEN, partially mitigated` · **highest-severity risk**
+### G13 · Intent may not be prize-eligible — `OPEN, mitigated two ways` · **highest-severity risk**
+
+**Sharpened 2026-08-26 by live data:** `SSL_VERIFICATION` has **17 lifetime requests** across the
+whole network. The 100-request floor is not a formality there — it is most likely unreachable
+without manufacturing the traffic ourselves. Second mitigation added: the miner now also serves
+**`STORM_ALERT`** (334 requests, same 3-miner field, same near-zero top score), giving a second,
+far more plausible eligibility path. See [docs/MARKET_DATA.md](docs/MARKET_DATA.md).
+
 > An Intent must have at least 3 active Miners **and receive at least 100 real requests from
 > Track 3 applications** to be eligible for global cash prizes.
 
@@ -116,6 +123,16 @@ applications", which we satisfy literally, but the spirit is real adoption. Gett
 use CertWatch (T4b.4) matters more than running it ourselves. We also still cannot verify the
 current per-intent count — no public counter has been found. This remains the single most likely
 way the project produces excellent work and zero prize.
+
+### G15 · We published a wrong competitive claim internally — `CLOSED (retracted)`
+We asserted across three documents and a draft X post that the rank-1 incumbent was beatable
+because Render cold-starts. Measurement: **675ms cold, 324ms warm — no cold start**, because
+validators spot-check every ~20s and keep it warm. The competitor also does a real TLS handshake,
+so our "handshake vs CT logs" edge applies to `certspotter`, not to them.
+
+Retracted everywhere. Recorded because the failure mode is the point: it was an inference stated
+as a fact, repeated until it felt established, and one `curl` disproved it. Measure claims about
+competitors **before** they reach a public post.
 
 ### G14 · x402 docs are drifted from the shipped SDK — `CLOSED (worked around)`
 The docs show `createSigner` from `@x402/evm`; the published package (2.23.0) exports

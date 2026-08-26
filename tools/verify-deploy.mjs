@@ -74,7 +74,33 @@ for (const [domain, expected] of CASES) {
   }
 }
 
-// 4. Input handling.
+// 4. Storm endpoint — the second declared intent.
+console.log("\n  storm-alert:");
+try {
+  const { res, ms } = await get(`/storm-alert?location=Chennai`);
+  timings.push(ms);
+  const body = await res.json();
+  const graded = ["none", "low", "moderate", "high", "severe"].includes(body.verdict);
+  report(res.ok && graded, "Chennai -> graded verdict", res.ok ? `got ${body.verdict}, ${ms}ms` : `HTTP ${res.status}`);
+  report(res.ok && body.window_hours === 48, "reports a 48h window", `window_hours=${body.window_hours}`);
+} catch (e) {
+  report(false, "Chennai -> graded verdict", e.message);
+}
+try {
+  const { res } = await get(`/storm-alert?location=Nowhereville%20XYZ123%20QQQ`);
+  const body = await res.json();
+  report(res.ok && body.verdict === "unknown", "unresolvable place -> unknown", `got ${body.verdict}`);
+} catch (e) {
+  report(false, "unresolvable place -> unknown", e.message);
+}
+try {
+  const { res } = await get(`/storm-alert`);
+  report(res.status === 400, "missing location -> 400", `got ${res.status}`);
+} catch (e) {
+  report(false, "missing location -> 400", e.message);
+}
+
+// 5. Input handling.
 console.log("\n  input handling:");
 try {
   const { res } = await get(`/ssl-check?domain=${encodeURIComponent("not a domain")}`);
@@ -90,7 +116,7 @@ try {
   report(false, "accepts a full URL via ?url=", e.message);
 }
 
-// 5. Latency. Spot checks run every ~20s and latency feeds the score.
+// 6. Latency. Spot checks run every ~20s and latency feeds the score.
 if (timings.length) {
   const sorted = [...timings].sort((a, b) => a - b);
   const p95 = sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))];

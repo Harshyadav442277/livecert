@@ -1,7 +1,8 @@
-# livecert — a Telegraph miner for `SSL_VERIFICATION`
+# livecert — a Telegraph miner for `SSL_VERIFICATION` and `STORM_ALERT`
 
-Live TLS certificate verification for the [Telegraph protocol](https://telegraphprotocol.com).
-Built for Telegraph Hackathon Season I, Track 1 (Miners).
+Two deterministic operational signals for the [Telegraph protocol](https://telegraphprotocol.com):
+live TLS certificate status, and 48-hour severe-weather risk. Built for Telegraph Hackathon
+Season I, Track 1 (Miners).
 
 **Status:** built and tested locally; **not yet deployed or registered**. See [SETUP.md](SETUP.md).
 
@@ -9,7 +10,7 @@ Built for Telegraph Hackathon Season I, Track 1 (Miners).
 
 ## What it does
 
-`GET /ssl-check?domain=example.com` performs a real TLS handshake and reports the certificate that
+``GET /ssl-check?domain=example.com` performs a real TLS handshake and reports the certificate that
 host is serving **right now**:
 
 ```json
@@ -25,13 +26,31 @@ host is serving **right now**:
 
 Verdicts: `valid` `expired` `not_yet_valid` `hostname_mismatch` `self_signed` `untrusted` `unreachable`
 
+`GET /storm-alert?location=Chennai` grades 48-hour severe-weather disruption risk on Beaufort gust
+thresholds plus thunderstorm and heavy-rain forecasts:
+
+```json
+{
+  "location": "Chennai, Tamil Nadu, India",
+  "verdict": "moderate",
+  "max_wind_gust_kmh": 41,
+  "thunderstorm": true,
+  "reason": "Chennai, Tamil Nadu, India has a moderate storm risk in the next 48 hours: peak wind gusts of 41 km/h, thunderstorms forecast."
+}
+```
+
+Verdicts: `none` `low` `moderate` `high` `severe` `unknown`
+
 ## Why this, and why this way
 
-**The intent was chosen from data, not intuition** — see [docs/INTENT_OCCUPANCY.md](docs/INTENT_OCCUPANCY.md).
-`SSL_VERIFICATION` is **Tier A** (deterministic, exact-match scoring) with three incumbents, each
-with a specific weakness: one on a host with cold starts against a ~20s spot-check cadence, one
-answering from certificate-transparency logs rather than the live server, one running 60–120s
-Qualys assessments.
+**Both intents were chosen from live network data** — see
+[docs/INTENT_OCCUPANCY.md](docs/INTENT_OCCUPANCY.md) and [docs/MARKET_DATA.md](docs/MARKET_DATA.md).
+Both are **Tier A** (deterministic, exact-match scoring) with only three incumbents each and a top
+score under 0.007 — nobody is doing well in either.
+
+`STORM_ALERT` was added after measuring demand: `SSL_VERIFICATION` has 17 lifetime requests across
+the network, `STORM_ALERT` has 334. Prize eligibility requires ≥100 real Track 3 requests **to the
+intent**, so ranking first in a dead intent pays nothing.
 
 **A handshake is not a CT lookup.** Certificate transparency reports what was *issued* for a
 domain. It cannot report what the server has *deployed*. Those disagree precisely when the question
@@ -72,4 +91,7 @@ Tracked honestly in [GAPS.md](GAPS.md). The ones that matter:
   phrasing is a hedge, not a certainty.
 - **`on_chain` is deliberately omitted**, so the miner cannot be targeted by ERC-8183 on-chain jobs.
   It serves HTTP and WebSocket traffic only. A real capability traded for schema simplicity.
+- **We got one thing wrong and corrected it.** We claimed the incumbent was beatable on Render
+  cold starts; measurement showed 675ms cold / 324ms warm — ~20s spot checks keep it warm. The
+  claim is retracted in [docs/MARKET_DATA.md](docs/MARKET_DATA.md).
 - Not yet measured under real routed load.
