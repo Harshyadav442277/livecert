@@ -43,10 +43,14 @@ exactly this reason.
 know the mechanism but not the specific comparison. Terseness and canonical phrasing are the right
 hedge under any word-overlap or embedding-similarity scheme, but this is inference, not fact.
 
-### G5 · `example-miner.yaml` not yet retrieved — `OPEN`
-The docs point at it repeatedly as the working starting point covering every block. We have the
-field reference but not the file.
-**Resolve:** find it in https://github.com/telegraphprotocol/telegraph-usecases
+### G5 · `example-miner.yaml` — `CLOSED (does not exist where the docs say)`
+Not in `telegraph-usecases` — that repo contains six reference **Track 3 applications**, not miner
+YAMLs. `telegraph-examples`, cited in the scoring-module docs, returns 404. The file may be
+private or unpublished.
+
+Mitigated: `miner.yaml` was written against the field reference and passes a local strict-schema
+precheck (top-level keys, `endpoints[]` keys, `signal_mapping` keys, slug pattern, base_url scheme).
+The authoritative check remains the sandbox at integrate.telegraphprotocol.com before we spend gas.
 
 ### G6 · Truncated doc pages — `OPEN`
 Both [YAML Configuration] and [Registering as a Miner] were read at a character cap and cut off
@@ -87,7 +91,7 @@ requests served" — both demand-side, neither controlled by code quality.
 Worth having read early: it corrected our deadline by a week (Track 1 closes **Aug 31**, not Sep 7),
 revealed the exact scoring split (**75% performance / 25% X**), and surfaced G13 below.
 
-### G13 · Our intent may not be prize-eligible — `OPEN` · **highest-severity open risk**
+### G13 · Our intent may not be prize-eligible — `OPEN, partially mitigated` · **highest-severity risk**
 > An Intent must have at least 3 active Miners **and receive at least 100 real requests from
 > Track 3 applications** to be eligible for global cash prizes.
 
@@ -95,10 +99,23 @@ revealed the exact scoring split (**75% performance / 25% X**), and surfaced G13
 **entirely outside our control**: it depends on other people choosing to build applications that
 check SSL certificates. We can hold rank 1 with a flawless score and win nothing.
 
-**Mitigation in scope:** build a Track 3 application ourselves that genuinely consumes the intent
-(Phase 4b). Bounded honestly — rule 04 disqualifies artificial metric inflation, so it must be a
-real product with a real reason to check certificates, not a request generator.
+**Mitigation built:** [app/](app/) — CertWatch, a TLS expiry monitor. It uses the **auto-routed**
+engine endpoint so Telegraph's own router classifies each query, meaning demand lands on the intent
+rather than being aimed at our miner. It counts `SSL_VERIFICATION`-classified requests separately.
+Bounded honestly per rule 04: a certificate monitor has a real reason to check certificates
+repeatedly, and being routed to a competitor is an accepted outcome.
 
-**Residual risk:** even so, 100 requests is a floor we may not reach alone, and we cannot verify
-the current count for our intent — no published per-intent Track 3 request counter has been found.
-This is the single most likely way the project produces excellent work and zero prize.
+**Residual risk:** 100 requests may still not be reachable from one app used by one person, and
+**self-generated demand is the weakest kind** — the rules say requests must come "from Track 3
+applications", which we satisfy literally, but the spirit is real adoption. Getting other people to
+use CertWatch (T4b.4) matters more than running it ourselves. We also still cannot verify the
+current per-intent count — no public counter has been found. This remains the single most likely
+way the project produces excellent work and zero prize.
+
+### G14 · x402 docs are drifted from the shipped SDK — `CLOSED (worked around)`
+The docs show `createSigner` from `@x402/evm`; the published package (2.23.0) exports
+`toClientEvmSigner(account, publicClient)` instead, and `wrapFetchWithPayment` takes an
+`x402Client` built via `x402Client.fromConfig({schemes:[...]})` rather than a bare signer. Also
+needs `viem`, which is ESM-only — so the app is ESM while the miner stays CommonJS.
+Resolved by reading the shipped `.d.ts` files rather than the docs. Worth remembering: **the
+Telegraph docs lag their own SDK**, so verify against the package, not the page.

@@ -1,7 +1,8 @@
+!.env.example
+*.log
 .env
 .env.*
-!.env.example
-node_modules/
 .wrangler/
+data/
 dist/
-*.log
+node_modules/

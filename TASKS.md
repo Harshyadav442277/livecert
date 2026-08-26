@@ -19,8 +19,10 @@ position, so every day of delay shortens the record we are judged on.
 - [x] **T0.3** Read the hackathon rules → [docs/JUDGING.md](docs/JUDGING.md). Found three things that
       changed the plan: Track 1 closes **Aug 31** not Sep 7; scoring is **75% performance + 25% X**;
       and an intent needs **≥100 Track 3 requests** to be prize-eligible. (closes G12, opens G13)
-- [ ] **T0.4** Pull `example-miner.yaml` from
-      [telegraph-usecases](https://github.com/telegraphprotocol/telegraph-usecases). (closes G5)
+- [x] **T0.4** `example-miner.yaml` is **not** in telegraph-usecases — that repo holds six reference
+      Track 3 *applications* (truthwire, trustfilter, scholarguard, adguard, reviewradar,
+      supersignal). `telegraph-examples` 404s. Our YAML was validated against the field reference
+      instead. (closes G5)
 - [ ] **T0.5** Re-read the truncated tails of the YAML-config and registration doc pages. (closes G6)
 - [x] **T0.6** D1 = `SSL_VERIFICATION`, D2 = host our own. PRD scope frozen.
 
@@ -70,12 +72,15 @@ Added to scope 2026-08-26. The eligibility guardrail (G13) means our intent need
 Track 3 requests or it wins nothing regardless of rank. A genuine app that consumes
 `SSL_VERIFICATION` is the mitigation — and a second $2,000 prize pool.
 
-- [ ] **T4b.1** Design a real TLS-expiry monitoring app on top of the miner. It must be genuinely
-      useful — rule 04 disqualifies artificial metric inflation, so this cannot be a request
-      generator wearing a UI.
-- [ ] **T4b.2** Consume the miner through Telegraph (`/engine/v1/ask` or the MCP server), **not**
-      by calling our own endpoint directly — routed requests are what count.
-- [ ] **T4b.3** Ship it, and track requests attributed to `SSL_VERIFICATION` toward the 100 floor.
+- [x] **T4b.1** Built **CertWatch** → [app/](app/). TLS expiry monitor with a dashboard: watchlist,
+      verdict, days-remaining, issuer, serving miner, and a link to each answer's on-chain signal.
+- [x] **T4b.2** Uses the **auto-routed** `/engine/v1/ask`, not `ask/{minerId}` — so Telegraph's own
+      router classifies the query and the demand lands on the *intent*, which is what the guardrail
+      counts. x402 payment wired via `@x402/fetch` + `@x402/evm` on Base Sepolia.
+- [ ] **T4b.3** *User:* fund a throwaway Base Sepolia wallet with testnet **USDC** and set
+      `EVM_PRIVATE_KEY` in `app/.env`. The dashboard already counts `SSL_VERIFICATION`-classified
+      requests separately, toward the 100 floor.
+- [ ] **T4b.4** Deploy CertWatch publicly so other people can use it (drives real, non-self demand).
 
 ## Phase 5 — Build in public (runs in parallel from day 1, not at the end)
 
