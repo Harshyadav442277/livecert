@@ -33,6 +33,16 @@ npm install && npm run build && npm start
 curl "http://127.0.0.1:8080/ssl-check?domain=expired.badssl.com"
 ```
 
+## Test
+
+```bash
+npm test
+```
+
+23 tests: unit coverage of the target parser, plus live checks against badssl.com asserting every
+verdict path. The live ones need network access and are deliberately not mocked — they are what
+actually proves the verdict logic.
+
 ## Deploy
 
 ```bash

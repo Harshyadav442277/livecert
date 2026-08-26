@@ -29,8 +29,8 @@ position, so every day of delay shortens the record we are judged on.
 ## Phase 1 — Prove the upstream
 
 - [x] **T1.1** Runtime spike: Node `tls.connect()` required; Workers cannot read peer certs. (closes G2)
-- [x] **T1.2** Built [miner/](miner/) — Node, zero runtime deps. All 6 verdicts verified against
-      the badssl.com suite. Typecheck clean.
+- [x] **T1.2** Built [miner/](miner/) — Node, zero runtime deps. **23 tests passing** (`npm test`),
+      covering the target parser and all six verdicts live against badssl.com. Typecheck clean.
 - [ ] **T1.3** *User:* deploy and get the public HTTPS URL. **This is the `base_url`.**
       `fly.toml` + `Dockerfile` are ready; needs a host account. Then update `base_url` in miner.yaml.
 - [ ] **T1.4** Measure deployed cold-start and p95 latency against the ~20s cadence (A3).

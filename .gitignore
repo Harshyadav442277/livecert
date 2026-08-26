@@ -4,5 +4,6 @@
 .env.*
 .wrangler/
 data/
+dist-test/
 dist/
 node_modules/
