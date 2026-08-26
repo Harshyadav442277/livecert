@@ -11,9 +11,12 @@
 
 name: uptime
 
+# Every 30 minutes: ~1,450 minutes/month, inside the 2,000 free-tier allowance for a
+# PRIVATE repo. Public repos get unlimited Actions minutes — if this repo is made
+# public, tighten this to "*/10 * * * *" for faster revocation detection.
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "*/30 * * * *"
   workflow_dispatch:
 
 jobs:
