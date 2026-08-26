@@ -1,0 +1,72 @@
+version: "1"
+kind: miner
+id: 4433
+slug: livecert
+protocol: generic
+name: LiveCert TLS Verification
+description: >-
+  Performs a live TLS handshake against a domain and reports the certificate that
+  host is actually serving right now: whether it is valid, trusted, expired,
+  self-signed, or issued for a different hostname, together with its issuer,
+  validity window, and days remaining. Unlike certificate-transparency lookups,
+  which report what was issued for a domain, this reports what is deployed on the
+  server — the two disagree whenever a host is still serving an old certificate.
+  Use it to check HTTPS/SSL/TLS certificate validity and expiry for any domain.
+base_url: https://livecert.fly.dev
+
+endpoints:
+  - path: /ssl-check
+    external_path: /ssl-check
+    method: GET
+    description: >-
+      Live TLS certificate check for one domain. Accepts a bare hostname, a full
+      URL, or host:port.
+
+semantics:
+  signal_mapping:
+    label_field: verdict
+    confidence_field: confidence
+    reason_field: reason
+  supported_intents:
+    - SSL_VERIFICATION
+
+input_schema:
+  type: object
+  required: [domain]
+  properties:
+    domain:
+      type: string
+      description: >-
+        Hostname to check. Accepts "example.com", "https://example.com/path", or
+        "example.com:8443".
+      examples: ["example.com", "expired.badssl.com"]
+
+output_schema:
+  type: object
+  properties:
+    domain: { type: string }
+    verdict:
+      type: string
+      description: Canonical certificate status.
+      enum: [valid, expired, not_yet_valid, hostname_mismatch, self_signed, untrusted, unreachable]
+    valid: { type: boolean }
+    trusted: { type: boolean }
+    expired: { type: boolean }
+    hostname_match: { type: boolean }
+    issuer: { type: [string, "null"] }
+    subject: { type: [string, "null"] }
+    valid_from: { type: [string, "null"] }
+    valid_to: { type: [string, "null"] }
+    days_remaining: { type: [integer, "null"] }
+    tls_protocol: { type: [string, "null"] }
+    confidence: { type: number }
+    reason: { type: string }
+    checked_at: { type: string }
+
+docs:
+  repository: https://github.com/Harshyadav442277/livecert
+
+rate_limit_per_sec: 20
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30

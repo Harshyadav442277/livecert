@@ -24,24 +24,38 @@ An earlier session assumption — that a Cloudflare Worker had to be built and d
 wrong as a *requirement*. Hosting our own endpoint is now a strategic option (differentiation,
 latency control), not a gate. See PRD **D2**.
 
-### Intent occupancy — captured, and it moved the plan
-45 canonical intents → [docs/INTENT_OCCUPANCY.md](docs/INTENT_OCCUPANCY.md).
-**Three sit at zero miners:** `RESEARCH_SYNTHESIS`, `TEXT_AUTHENTICITY_CHECK`, `TWITTER_SEARCH`.
+### Intent decided: `SSL_VERIFICATION` — and why
+Chosen on **occupancy × scoring tier** → [docs/INTENT_OCCUPANCY.md](docs/INTENT_OCCUPANCY.md).
 
-But two of those are empty for economic reasons (per-call LLM cost; a ~$100/mo X API), not because
-nobody noticed. **`TEXT_AUTHENTICITY_CHECK` is the front-runner** — the only empty one that looks
-merely overlooked, sitting next to `AI_TEXT_DETECTION` (2 miners) and easily confused with it.
-`SSL_VERIFICATION` (3 miners) is the strong second: no upstream at all, so no rate limit or
-third-party outage can trigger a revocation.
+Scoring has two tiers. **Tier A = deterministic WASM exact match** (one right answer).
+**Tier B = LLM-judge** (open-ended). Tier A is strictly better for winning rank 1 — we can be
+exactly right on demand, but cannot guarantee an LLM agrees with us.
 
-Two earlier guesses tested: weather **is** crowded (8/9) as predicted, and `ONCHAIN_TX_LOOKUP` —
-suggested for fitting blockchain experience — is a **trap at 10 miners**. Crypto-native intents
-are where crypto-native entrants pile up.
+The three zero-occupancy intents (`RESEARCH_SYNTHESIS`, `TEXT_AUTHENTICITY_CHECK`,
+`TWITTER_SEARCH`) are **all Tier B**, which is why `TEXT_AUTHENTICITY_CHECK` was dropped despite
+being the occupancy front-runner.
 
-### Next action
-**T0.2** — read [Intents](https://docs.telegraphprotocol.com/docs/using/intents) for **how each
-intent is scored**. D1 cannot close without it; picking a target before seeing its scoring function
-is guesswork.
+`SSL_VERIFICATION` is Tier A with **3 incumbents, each with a specific weakness**:
+- **TxLens** (9002) — on Render, cold starts against a ~20s spot-check cadence; SSL is 1 of 8 caps
+- **certspotter** (10) — answers from **CT logs** = what was *issued*, not what is *deployed*
+- **ssllabs** (227) — a full Qualys assessment takes **60–120s** on an uncached host
+
+### Built: `livecert`
+[miner/](miner/) — Node, **zero runtime dependencies**, live TLS handshake. All six verdicts
+verified against badssl.com (valid / expired / self_signed / hostname_mismatch / untrusted /
+unreachable). ~100ms cold, **12ms cached**. Typecheck clean.
+[miner.yaml](miner.yaml) written and passing a local strict-schema precheck.
+`slug: livecert`, `id: 4433` — both verified free.
+
+**Scoring insight driving the response shape:** the WASM scorer compares *plain strings* and the
+reference module scores `matched ÷ total words in the miner's answer`. Verbose answers are
+**penalised**. Our `reason` is one tight factual sentence on purpose — and SSL Labs returning a
+full grade report is actively hurt by that arithmetic.
+
+### Next action — blocked on the user
+**T1.3** — deploy `miner/` to get a public HTTPS URL. `Dockerfile` and `fly.toml` are ready
+(`min_machines_running = 1`, non-negotiable per A3). That URL becomes `base_url` in miner.yaml,
+after which registration can proceed.
 
 ---
 

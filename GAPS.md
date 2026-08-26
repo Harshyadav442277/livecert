@@ -9,19 +9,18 @@ Status: `OPEN` unresolved · `CHECKING` in progress · `CLOSED` resolved, with t
 
 ## Blocking
 
-### G1 · Which intent to claim — `CHECKING`
-Occupancy data captured 2026-08-26 → [docs/INTENT_OCCUPANCY.md](docs/INTENT_OCCUPANCY.md).
-45 canonical intents; **three sit at zero miners** (`RESEARCH_SYNTHESIS`,
-`TEXT_AUTHENTICITY_CHECK`, `TWITTER_SEARCH`).
-**Still open:** the *choice*. Two of the three empties are empty for economic reasons (per-call
-LLM cost; a paywalled X API), so they are not free wins. Decision needs G4 (how the intent is
-actually scored) before it can close.
+### G1 · Which intent to claim — `CLOSED: SSL_VERIFICATION`
+Decided on occupancy **and scoring tier** → [docs/INTENT_OCCUPANCY.md](docs/INTENT_OCCUPANCY.md).
+Tier A (exact match), 3 incumbents, all three with exploitable weaknesses. The zero-occupancy
+intents turned out to be Tier B (LLM-judged) and were rejected for it.
 
-### G2 · Can `SSL_VERIFICATION` run on Cloudflare Workers? — `OPEN`
-Reading a peer certificate needs `tls.connect()` + `getPeerCertificate()`, a Node API. Workers'
-`fetch` does not expose certificate details. If it cannot, that intent needs a Node runtime
-(Fly.io, a VPS) — which reintroduces cold-start and uptime risk that Workers avoids (A3).
-**Resolve:** spike it before committing to the intent, not after.
+
+### G2 · Runtime for TLS inspection — `CLOSED: Node, not Workers`
+Confirmed by spike: Workers' `fetch` does not expose peer certificates; Node's
+`tls.connect()` + `getPeerCertificate()` does, and was verified working against the full
+badssl.com suite (valid, expired, self-signed, hostname-mismatch, untrusted-root, unreachable).
+Hosting is therefore Node on an always-on machine — `fly.toml` pins `min_machines_running = 1`
+precisely because scale-to-zero would read as spot-check failure (A3).
 
 ### G3 · Assumption that weather would be crowded — `CLOSED (confirmed)`
 `WEATHER_CHECK` 8 miners, `WEATHER_FORECAST` 9 — among the most contested on the board. The
@@ -33,14 +32,16 @@ intents are where crypto-native entrants cluster.
 
 ## Unverified protocol facts
 
-### G4 · Exact request/response contract validators use to score — `OPEN`
-We know scoring happens ("stake-weighted median of validator local scores", spot checks every
-~20s) but not what a validator actually *sends* or how a response is judged correct for a given
-intent. Without this we are optimizing blind.
-**Resolve:** read [Intents](https://docs.telegraphprotocol.com/docs/using/intents) — the docs say
-it covers "what each one means and **how it's scored**" — and
-[Build a Scoring Module](https://docs.telegraphprotocol.com/docs/scoring/build-a-scoring-module),
-which shows scoring from the other side. Neither has been read yet.
+### G4 · How answers are scored — `CLOSED (with one residual unknown)`
+Both docs read. Scoring is a sandboxed WASM module receiving **three plain strings** —
+`question`, `ground_truth`, `miner_answer` — and returning an f32 in [0,1]. The reference module
+scores `matched ÷ total words in the miner's answer`, so **verbose answers are penalised**: every
+word the ground truth lacks lowers the fraction. Our `reason` is one tight factual sentence for
+exactly this reason.
+
+**Residual unknown:** the *actual champion module* for `SSL_VERIFICATION` is not published, so we
+know the mechanism but not the specific comparison. Terseness and canonical phrasing are the right
+hedge under any word-overlap or embedding-similarity scheme, but this is inference, not fact.
 
 ### G5 · `example-miner.yaml` not yet retrieved — `OPEN`
 The docs point at it repeatedly as the working starting point covering every block. We have the
@@ -68,7 +69,7 @@ Per ARCHITECTURE A9. Cost: our miner **cannot be targeted by ERC-8183 on-chain j
 node has no way to build the call without `on_chain.request`. We serve HTTP and WebSocket traffic
 only. Accepted for H1; this is a real capability we are giving up, not a no-op.
 
-### G10 · No monitoring built yet — `OPEN`
+### G10 · No monitoring built yet — `OPEN` (unchanged)
 A3 makes uptime the product, and spot checks run every ~20s, but nothing watches our endpoint. A
 revocation could go unnoticed for a day. Needs at minimum a periodic check of
 `/api/miners/<registrationId>` for `activation_status`.

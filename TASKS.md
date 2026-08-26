@@ -10,33 +10,32 @@ One task = one change = one commit. Work top-down; the ordering encodes dependen
 
 - [x] **T0.1** Fetch live intent occupancy → [docs/INTENT_OCCUPANCY.md](docs/INTENT_OCCUPANCY.md).
       45 canonical intents; 3 at zero. (closes G3; narrows G1)
-- [ ] **T0.2** Read [Intents](https://docs.telegraphprotocol.com/docs/using/intents) for **how each
-      intent is scored**. We cannot optimize a score we have not read. (closes G4)
+- [x] **T0.2** Read Intents + Build a Scoring Module. Scoring is a WASM module over three plain
+      strings; verbose answers are penalised by word-overlap. (closes G4)
 - [ ] **T0.3** Read the [hackathon rules](https://hackathon.telegraphprotocol.com/rules) — eligibility,
       submission format, team size. Cheap, and invalidates work if wrong. (closes G12)
 - [ ] **T0.4** Pull `example-miner.yaml` from
       [telegraph-usecases](https://github.com/telegraphprotocol/telegraph-usecases). (closes G5)
 - [ ] **T0.5** Re-read the truncated tails of the YAML-config and registration doc pages. (closes G6)
-- [ ] **T0.6** **Decide D1 (intent) and D2 (own endpoint vs. pure proxy).** Freeze PRD scope.
+- [x] **T0.6** D1 = `SSL_VERIFICATION`, D2 = host our own. PRD scope frozen.
 
 ## Phase 1 — Prove the upstream
 
-- [ ] **T1.1** If D2 = own endpoint: spike the runtime question — can the chosen logic run on
-      Cloudflare Workers, or does it need Node? (closes G2)
-- [ ] **T1.2** Stand up the upstream. Either confirm the third-party API answers correctly and
-      measure its latency, or scaffold and deploy our own endpoint.
-- [ ] **T1.3** Get a public HTTPS URL and confirm it responds. **This is the `base_url`.**
-- [ ] **T1.4** Measure cold-start and p95 latency against the ~20s spot-check cadence (A3).
+- [x] **T1.1** Runtime spike: Node `tls.connect()` required; Workers cannot read peer certs. (closes G2)
+- [x] **T1.2** Built [miner/](miner/) — Node, zero runtime deps. All 6 verdicts verified against
+      the badssl.com suite. Typecheck clean.
+- [ ] **T1.3** *User:* deploy and get the public HTTPS URL. **This is the `base_url`.**
+      `fly.toml` + `Dockerfile` are ready; needs a host account. Then update `base_url` in miner.yaml.
+- [ ] **T1.4** Measure deployed cold-start and p95 latency against the ~20s cadence (A3).
+      Local baseline: ~100ms cold handshake, **12ms cached**.
 
 ## Phase 2 — Author the YAML
 
-- [ ] **T2.1** Choose slug and numeric `id`; verify `id` is unused against
-      `https://devnode.telegraphprotocol.com/api/miners`. A clash is a terminal rejection. (D3)
-- [ ] **T2.2** Write the miner YAML — six required top-level fields, `endpoints[]`, `semantics`.
-      No `on_chain` block (A9).
-- [ ] **T2.3** Declare `limitations[]` with the upstream's real `property: rate` allowance (A4).
-- [ ] **T2.4** Decide whether `errors.status_path` is needed — does the upstream ever return a
-      liar-200? (A5)
+- [x] **T2.1** `slug: livecert`, `id: 4433` — both verified free against the live 89-miner catalog.
+- [x] **T2.2** [miner.yaml](miner.yaml) written; passes a local strict-schema precheck.
+- [x] **T2.3** No `limitations[]` needed — we have no third-party upstream, so no account quota
+      to declare. This is a direct benefit of D2.
+- [x] **T2.4** No `errors` block — our service uses real HTTP status codes, never a liar-200 (A5).
 - [ ] **T2.5** Verify every declared intent with `isCanonicalIntent(string)`. Exact case. One bad
       string reverts the whole transaction.
 - [ ] **T2.6** Sandbox-validate at `integrate.telegraphprotocol.com` until every endpoint passes. (A2)

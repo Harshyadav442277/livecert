@@ -1,6 +1,6 @@
 # PRD.md — Telegraph Hackathon, Season I / H1
 
-**Status:** draft, scope not yet frozen. Freeze after the Intent Decision (see Open Decisions).
+**Status:** scope frozen 2026-08-26. Intent decided: `SSL_VERIFICATION`.
 **Deadline:** 2026-09-07 12:00 UTC — submissions close. ~12 days from 2026-08-26.
 **Track:** 1 — Miner. (Track 2 Script Author and Track 3 Apps are out of scope; see Non-Goals.)
 
@@ -72,32 +72,28 @@ Deliberately excluded to protect the deadline:
 
 ## Open decisions
 
-**D1 — Which intent? (blocking; decide first)**
-Occupancy captured 2026-08-26 → [docs/INTENT_OCCUPANCY.md](docs/INTENT_OCCUPANCY.md).
-45 canonical intents. Three are empty, but **empty is not the same as available**:
+**D1 — Which intent? — CLOSED: `SSL_VERIFICATION`**
+Full reasoning in [docs/INTENT_OCCUPANCY.md](docs/INTENT_OCCUPANCY.md). In short: it is
+**Tier A (deterministic, WASM exact match)**, has only **3 incumbents**, and each of the three has
+a specific weakness — one on Render with cold starts, one answering from certificate-transparency
+logs rather than the live server, one running 60–120s Qualys assessments against a 20s spot-check
+cadence. Certificate facts are objectively checkable, so Tier A scoring is a problem we can simply
+solve rather than a judgement we must hope goes our way.
 
-| Candidate | Miners | Read |
-|---|---|---|
-| `TEXT_AUTHENTICITY_CHECK` | **0** | **Front-runner.** The only empty intent whose emptiness looks like an oversight rather than an economic wall — it sits next to `AI_TEXT_DETECTION` (2 miners) and is easily mistaken for it. Objective ground truth. |
-| `SSL_VERIFICATION` | 3 | Strong second. No upstream at all — we implement it, so no rate limit and no third-party outage feeding a revocation (A3). Needs a Node runtime; see G2. |
-| `CVE_LOOKUP` | 2 | Objective, free NVD upstream, thin field. Upstream rate limits are the risk. |
-| `RESEARCH_SYNTHESIS` | **0** | Empty because it costs LLM inference per call. A bill, not an opening. |
-| `TWITTER_SEARCH` | **0** | Empty because the X API is paywalled at ~$100+/mo. Same. |
-| `WEATHER_CHECK` / `WEATHER_FORECAST` | 8 / 9 | **Avoid.** The docs' own example; most contested on the board. |
-| `ONCHAIN_TX_LOOKUP` | 10 | **Avoid**, despite fitting existing blockchain experience — tied second-most crowded, and rank 4+ earns nothing. |
+The zero-occupancy intents were all Tier B (LLM-judged) and were rejected for it: zero competition
+under a judge we cannot influence is worth less than third place under exact match.
 
-Cannot close until **G4** (how the chosen intent is actually scored) is read. Optimizing for a
-scoring function we have not seen is guesswork.
+**D2 — Host our own endpoint? — CLOSED: yes.**
+Reading a peer certificate needs a live TLS handshake (`tls.connect` + `getPeerCertificate`), which
+no free upstream provides in the form this intent wants. Building it also removes every third-party
+dependency, so no upstream rate limit or outage can trigger a Routing Revocation against us.
+Implementation in [miner/](miner/) — Node, zero runtime dependencies.
 
-**D2 — Host our own endpoint, or proxy an upstream directly?**
-Falls out of D1. A pure-proxy miner is free and instant but trivially copyable — anyone can point
-at the same upstream, and then we compete on nothing. Our own endpoint costs a day and wins on
-latency, response shape, and correctness. Lean toward our own *if* D1 picks an intent where logic
-adds real value.
-
-**D3 — Slug and numeric `id`.**
-`id` must be unused network-wide; a clash is a terminal rejection. Check the live catalog before
-choosing. Slug binds to the wallet permanently — pick a name worth keeping.
+**D3 — Slug and numeric `id`. — CLOSED**
+`slug: livecert`, `id: 4433`. Both verified free against the live catalog of 89 miners on
+2026-08-26 (4433 for the alternate-TLS port; memorable and on-theme). Deliberately *not* named in
+the existing `*wire` family (chainwire, skywire, gaswire, tvlwire, scorewire) to avoid reading as
+a clone of another operator's fleet.
 
 **D4 — Fee address.**
 Which EVM wallet receives MACHINA. Can be the registering wallet or a separate cold address.

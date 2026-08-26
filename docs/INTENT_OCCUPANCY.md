@@ -1,75 +1,93 @@
-# INTENT_OCCUPANCY.md — where the empty slots are
+# INTENT_OCCUPANCY.md — how the intent was chosen
 
-Source: `GET https://devnode.telegraphprotocol.com/engine/v1/intents`
-Captured **2026-08-26**. `canonical_on_chain: 45`.
+Sources, captured **2026-08-26**:
+- `GET /engine/v1/intents` → 45 canonical intents with per-intent miner counts
+- [Intents doc](https://docs.telegraphprotocol.com/docs/using/intents) → scoring tier per intent
+- `GET /engine/v1/intents/<INTENT>/miners` → the incumbents themselves
 
-Routing pays **70/20/10 to ranks 1/2/3 and nothing to 4th**, so occupancy is the single highest-
-leverage input to the intent decision. Re-capture before committing — the set changes on-chain.
+Routing pays **70/20/10 to ranks 1/2/3 and nothing to 4th**, so this decision matters more
+than implementation quality. Re-capture before committing — the canonical set changes on-chain.
 
 ---
 
-## The three empty intents
+## The two axes
 
-| Intent | Miners | Why it is probably empty |
+**Occupancy** — how many miners already serve the intent.
+
+**Scoring tier** — how answers are judged:
+
+| Tier | Judged by | Implication |
 |---|---|---|
-| `RESEARCH_SYNTHESIS` | **0** | Needs multi-source retrieval **plus** LLM synthesis. Real per-call inference cost. Barrier is money. |
-| `TEXT_AUTHENTICITY_CHECK` | **0** | Adjacent to `AI_TEXT_DETECTION` (2 miners) and easily mistaken for it. Barrier may be **only that people pick the obvious neighbour**. |
-| `TWITTER_SEARCH` | **0** | X API is paywalled at ~$100+/month. Barrier is money. |
+| **A — Deterministic** | WASM exact match | One right answer. Correctness is provable and fully in our control. |
+| **B — LLM-Judge** | LLM context + WASM | Open-ended. Score depends on a language model's read of quality. Higher variance, less controllable. |
 
-**An empty intent is not automatically an opportunity.** Two of these three are empty because they
-cost real money per call, which is exactly why nobody has taken them — and why taking them is not
-free for us either. `TEXT_AUTHENTICITY_CHECK` is the only one whose emptiness looks like an
-oversight rather than an economic barrier.
+**Tier A is strictly better for winning rank 1.** We can be exactly right on demand; we cannot
+guarantee an LLM judge agrees with us.
 
-## Thinly held (1–3 miners — rank 1 still reachable)
+## Tier A intents, by occupancy
 
 ```
-1 miner   CONTENT_EXTRACTION  CONTENT_MODERATION  CONTENT_VERIFICATION
-          DEEPFAKE_DETECTION  FACT_CHECK  IP_GEOLOCATION
-          MEDIA_AUTHENTICITY_CHECK  NEWS_HEADLINES  TELEGRAPH_KNOWLEDGE
-          VIDEO_VERIFICATION
-
-2 miners  ACADEMIC_SEARCH  AI_TEXT_DETECTION  CVE_LOOKUP  GAME_RESULT
-          IMAGE_VERIFICATION  LANGUAGE_TRANSLATION  SENTIMENT_ANALYSIS
-          SPORTS_SCORE  TEXT_GENERATION
-
-3 miners  CURRENCY_EXCHANGE  SSL_VERIFICATION  STORM_ALERT  TEXT_CLASSIFICATION
-```
-
-## Crowded — avoid
-
-```
- 6  GAS_PRICE  RESEARCH_QUERY  TVL_LOOKUP  WALLET_BALANCE_CHECK
- 7  AGENT_TASK  CRYPTO_PRICE  FINANCIAL_DATA  URL_SCAN  WEB_SEARCH
+ 1  IP_GEOLOCATION   DEEPFAKE_DETECTION   VIDEO_VERIFICATION   MEDIA_AUTHENTICITY_CHECK
+ 2  CVE_LOOKUP   SPORTS_SCORE   GAME_RESULT   IMAGE_VERIFICATION
+ 3  SSL_VERIFICATION   CURRENCY_EXCHANGE   STORM_ALERT
+ 4  STOCK_PRICE   TOKEN_HOLDER_COUNT
+ 6  GAS_PRICE   TVL_LOOKUP   WALLET_BALANCE_CHECK
+ 7  CRYPTO_PRICE   FINANCIAL_DATA   URL_SCAN
  8  WEATHER_CHECK
  9  WEATHER_FORECAST
-10  CHAT_COMPLETION  ONCHAIN_TX_LOOKUP
-11  FRAUD_DETECTION  LANGUAGE_GENERATION  TASK_COMPLETION
+10  ONCHAIN_TX_LOOKUP
+11  FRAUD_DETECTION
 ```
 
-## Two earlier assumptions, now tested
+The four media-authenticity intents sit at 1–2 miners but need real ML models — out of reach in
+a 12-day window. That leaves `IP_GEOLOCATION`, `CVE_LOOKUP`, and `SSL_VERIFICATION`.
 
-**"Weather will be crowded because the docs' example wraps a weather API."** — **Confirmed.**
-`WEATHER_CHECK` 8, `WEATHER_FORECAST` 9. Among the most contested on the board. Avoiding it was right.
+## The three empty intents are all Tier B
 
-**"`ONCHAIN_TX_LOOKUP` is a good pick for someone with blockchain experience."** — **Wrong.**
-10 miners, tied for second-most crowded. Rank 4+ earns nothing, so prior familiarity with the
-domain would have bought a zero. The blockchain-adjacent intents generally (`GAS_PRICE` 6,
-`TVL_LOOKUP` 6, `WALLET_BALANCE_CHECK` 6, `CRYPTO_PRICE` 7, `ONCHAIN_TX_LOOKUP` 10) are where
-crypto-native hackathon entrants cluster. Domain comfort pointed at the most contested corner of
-the board.
+| Intent | Miners | Tier | Why it is empty |
+|---|---|---|---|
+| `RESEARCH_SYNTHESIS` | 0 | **B** | Multi-source retrieval + LLM synthesis. Real per-call cost. |
+| `TEXT_AUTHENTICITY_CHECK` | 0 | **B** | Adjacent to `AI_TEXT_DETECTION`; people take the neighbour. |
+| `TWITTER_SEARCH` | 0 | **B** | X API paywalled at ~$100+/mo. |
 
-## Read
+`TEXT_AUTHENTICITY_CHECK` was the front-runner on occupancy alone. The tier data killed it:
+zero competition judged by an LLM is worth less than third place judged by exact match, because
+the first is a coin-flip we cannot influence and the second is a problem we can simply solve.
 
-The board splits into three economic zones:
+## Decision: `SSL_VERIFICATION`
 
-1. **Free-to-wrap, objective** (weather, crypto price, gas price) — crowded, because a free upstream
-   plus fifteen minutes of YAML is all it takes.
-2. **Costly per call** (`RESEARCH_SYNTHESIS`, `TWITTER_SEARCH`) — empty, because the economics are
-   genuinely hard, not because nobody noticed.
-3. **Objective but needs actual work** (`SSL_VERIFICATION` 3, `CVE_LOOKUP` 2,
-   `TEXT_AUTHENTICITY_CHECK` 0) — thin, because it requires building something rather than
-   pointing at a URL.
+Tier A, 3 incumbents, and **all three have a specific, exploitable weakness**:
 
-Zone 3 is where a competent build wins a 70% slot. Zone 1 is a race to the bottom against people
-who spent fifteen minutes. Zone 2 is a bill.
+| # | Miner | `base_url` | Weakness |
+|---|---|---|---|
+| 9002 | **TxLens** | `…onrender.com` | **Render** — cold starts against a ~20s spot-check cadence. SSL is 1 of its 8 capabilities, so it is a side feature, not a specialty. |
+| 10 | **certspotter-cert-verification** | `api.certspotter.com` | Answers from **certificate-transparency logs** — what was *issued*, not what is *deployed*. Wrong whenever a host still serves an old cert. |
+| 227 | **ssllabs** | `api.ssllabs.com/api/v3` | A full **Qualys SSL Labs assessment takes 60–120s** on an uncached host, plus strict rate limits. Catastrophic against 20s spot checks. |
+
+Ours answers with a **live TLS handshake** in ~100ms cold and ~12ms cached, on always-on
+infrastructure, with **no upstream API at all** — so no third-party rate limit or outage can
+trigger a Routing Revocation against us. See [../miner/README.md](../miner/README.md).
+
+Two further reasons it fits Tier A exact-match scoring:
+
+- **Ground truth is objectively checkable.** A certificate's issuer, expiry, and chain validity
+  are facts anyone can independently confirm — no judgement call for a scorer to get wrong.
+- **A terse answer scores better.** The reference scoring module computes word overlap as
+  *matched ÷ total words in the miner's answer*, so extra words the ground truth lacks **dilute
+  the score**. Our `reason` field is one factual sentence by design. SSL Labs returning a full
+  grade report is actively penalised by that arithmetic.
+
+## Rejected, with reasons
+
+- **`WEATHER_CHECK` / `WEATHER_FORECAST`** (8/9) — the docs' own `example-miner.yaml` wraps a
+  weather API and tells newcomers to register it as-is. Most contested on the board, as predicted.
+- **`ONCHAIN_TX_LOOKUP`** (10) — suggested earlier for fitting existing blockchain experience;
+  tied second-most crowded. Domain familiarity pointed straight at the worst corner of the board.
+  Every crypto-adjacent intent (`GAS_PRICE` 6, `TVL_LOOKUP` 6, `WALLET_BALANCE_CHECK` 6,
+  `CRYPTO_PRICE` 7) is where crypto-native entrants cluster.
+- **`IP_GEOLOCATION`** (1, Tier A) — the tempting one. Rejected because geolocation ground truth
+  is **provider-dependent**: MaxMind, IPinfo and ip-api disagree on city for the same IP, so
+  "exact match" scoring is a lottery against whichever database the scorer used. Certificate
+  facts have no such ambiguity.
+- **`CVE_LOOKUP`** (2, Tier A) — genuinely viable, and the second choice. Slightly worse because
+  it needs the NVD upstream, whose rate limits become our revocation risk.
