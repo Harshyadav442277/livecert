@@ -24,8 +24,23 @@ export interface State {
   totals: { requests: number; spentUsd: number; sslVerificationRequests: number };
 }
 
-const FILE = resolve(process.env.STATE_FILE ?? "data/state.json");
+/**
+ * Serverless filesystems are read-only apart from /tmp, and /tmp does not survive
+ * between cold starts. So on Vercel the watchlist is seeded from WATCH_DOMAINS and
+ * state is best-effort — the app still makes real, paid, verifiable Telegraph calls,
+ * it just does not remember them across instances. Locally it persists normally.
+ */
+const ON_SERVERLESS = Boolean(process.env.VERCEL);
+const FILE = resolve(process.env.STATE_FILE ?? (ON_SERVERLESS ? "/tmp/state.json" : "data/state.json"));
 const MAX_CHECKS = 500;
+
+/** Comma-separated seed list, so a fresh serverless instance is never empty. */
+function seedDomains(): string[] {
+  return (process.env.WATCH_DOMAINS ?? "")
+    .split(",")
+    .map((d) => d.trim().toLowerCase())
+    .filter((d) => d.length > 0);
+}
 
 const empty: State = {
   domains: [],
@@ -37,20 +52,27 @@ export async function load(): Promise<State> {
   try {
     const raw = await readFile(FILE, "utf8");
     const parsed = JSON.parse(raw) as Partial<State>;
+    const domains = parsed.domains ?? [];
+    for (const d of seedDomains()) if (!domains.includes(d)) domains.push(d);
     return {
-      domains: parsed.domains ?? [],
+      domains,
       checks: parsed.checks ?? [],
       totals: parsed.totals ?? { ...empty.totals },
     };
   } catch {
-    return { ...empty, domains: [], checks: [], totals: { ...empty.totals } };
+    return { domains: seedDomains(), checks: [], totals: { ...empty.totals } };
   }
 }
 
 export async function save(state: State): Promise<void> {
-  await mkdir(dirname(FILE), { recursive: true });
-  const trimmed: State = { ...state, checks: state.checks.slice(-MAX_CHECKS) };
-  await writeFile(FILE, JSON.stringify(trimmed, null, 2), "utf8");
+  // Best-effort: a read-only filesystem must not take the dashboard down.
+  try {
+    await mkdir(dirname(FILE), { recursive: true });
+    const trimmed: State = { ...state, checks: state.checks.slice(-MAX_CHECKS) };
+    await writeFile(FILE, JSON.stringify(trimmed, null, 2), "utf8");
+  } catch {
+    /* ignore — state is in memory for the life of this instance */
+  }
 }
 
 export function record(state: State, check: Check): void {

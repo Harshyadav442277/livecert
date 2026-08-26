@@ -4,7 +4,12 @@ Three deterministic operational signals for the [Telegraph protocol](https://tel
 live TLS certificate status, 48-hour severe-weather risk, and weather forecasts. Built for
 Telegraph Hackathon Season I, Track 1 (Miners).
 
-**Status:** built and tested locally; **not yet deployed or registered**. See [SETUP.md](SETUP.md).
+**Status:** **deployed and verified**; not yet registered on-chain. See [SETUP.md](SETUP.md).
+
+| | |
+|---|---|
+| Miner | `https://miner-wine.vercel.app` — all 18 acceptance checks pass |
+| Track 3 app | `https://app-five-blond-45.vercel.app` |
 
 ---
 

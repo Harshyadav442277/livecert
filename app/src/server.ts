@@ -1,16 +1,12 @@
 import * as http from "node:http";
-import { readFile } from "node:fs/promises";
-import { resolve, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
 import { load, save, latest, type State } from "./store.js";
 import { runOnce, checkDomain } from "./monitor.js";
 import { record } from "./store.js";
 import { payerAddress } from "./telegraph.js";
+import { DASHBOARD_HTML } from "./dashboard.js";
 
 const PORT = Number(process.env.PORT ?? 3000);
 const INTERVAL_MS = Number(process.env.CHECK_INTERVAL_MS ?? 6 * 60 * 60 * 1000);
-const HERE = dirname(fileURLToPath(import.meta.url));
-const INDEX = resolve(HERE, "../public/index.html");
 
 let state: State = await load();
 
@@ -31,16 +27,15 @@ async function readBody(req: http.IncomingMessage): Promise<Record<string, unkno
   }
 }
 
-const server = http.createServer((req, res) => {
+export function handleRequest(req: http.IncomingMessage, res: http.ServerResponse): void {
   void (async () => {
     const url = new URL(req.url ?? "/", `http://localhost:${PORT}`);
     const path = url.pathname.replace(/\/+$/, "") || "/";
 
     try {
       if (path === "/" && req.method === "GET") {
-        const html = await readFile(INDEX, "utf8");
         res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-        res.end(html);
+        res.end(DASHBOARD_HTML);
         return;
       }
 
@@ -93,16 +88,29 @@ const server = http.createServer((req, res) => {
       json(res, 500, { error: (e as Error).message });
     }
   })();
-});
+}
 
-server.listen(PORT, () => {
-  console.log(`certwatch dashboard on http://localhost:${PORT}`);
-  console.log(`paying from ${payerAddress() ?? "(EVM_PRIVATE_KEY not set — checks will fail)"}`);
-});
+const app = http.createServer(handleRequest);
 
-if (INTERVAL_MS > 0) {
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`certwatch dashboard on http://localhost:${PORT}`);
+    console.log(`paying from ${payerAddress() ?? "(EVM_PRIVATE_KEY not set — checks will fail)"}`);
+  });
+}
+
+// Background sweeps only make sense on a long-lived process. A serverless instance
+// is frozen between requests, so the interval would never reliably fire.
+if (INTERVAL_MS > 0 && !process.env.VERCEL) {
   setInterval(() => {
     console.log(`[${new Date().toISOString()}] scheduled sweep`);
     runOnce(state).catch((e) => console.error("sweep failed:", (e as Error).message));
   }, INTERVAL_MS);
 }
+
+/**
+ * Vercel's Node runtime uses this module's default export as the entrypoint and
+ * accepts an http.Server directly. Locally the listen() above runs instead; on
+ * Vercel it is skipped and the platform drives this server.
+ */
+export default app;

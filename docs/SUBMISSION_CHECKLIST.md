@@ -29,10 +29,11 @@ position. Registering on Aug 30 leaves one day of record to be judged on.
 | # | Item | Who | State |
 |---|---|---|---|
 | 12 | CertWatch built | Claude | **done** — dashboard tested |
-| 13 | Deploy config | Claude | **done** — `app/Dockerfile`, `app/fly.toml` |
+| 13 | Deploy config | Claude | **done** |
+| 13b | CertWatch deployed publicly | Claude | **done** — `https://app-five-blond-45.vercel.app` |
 | 14 | Base Sepolia **USDC** funded (separate from ETH) | **User** | not started |
 | 15 | `EVM_PRIVATE_KEY` set as a Fly secret | **User** | blocked on 14 |
-| 16 | Deployed publicly | **User** | blocked on 15 |
+| 16 | ~~Deployed publicly~~ | Claude | **done** — needs only the key to start making real calls |
 | 17 | Real users making real checks | **User** + outreach | blocked on 16 |
 
 ## Standing requirements
