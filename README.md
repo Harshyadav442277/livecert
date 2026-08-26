@@ -1,8 +1,8 @@
-# livecert — a Telegraph miner for `SSL_VERIFICATION` and `STORM_ALERT`
+# livecert — a Telegraph miner for `SSL_VERIFICATION`, `STORM_ALERT`, and `WEATHER_FORECAST`
 
-Two deterministic operational signals for the [Telegraph protocol](https://telegraphprotocol.com):
-live TLS certificate status, and 48-hour severe-weather risk. Built for Telegraph Hackathon
-Season I, Track 1 (Miners).
+Three deterministic operational signals for the [Telegraph protocol](https://telegraphprotocol.com):
+live TLS certificate status, 48-hour severe-weather risk, and weather forecasts. Built for
+Telegraph Hackathon Season I, Track 1 (Miners).
 
 **Status:** built and tested locally; **not yet deployed or registered**. See [SETUP.md](SETUP.md).
 
@@ -41,6 +41,20 @@ thresholds plus thunderstorm and heavy-rain forecasts:
 
 Verdicts: `none` `low` `moderate` `high` `severe` `unknown`
 
+`GET /weather-forecast?location=London&hours=24` reports future conditions over a stated window —
+the intent is explicitly about *future* conditions, not current ones:
+
+```json
+{
+  "location": "London, England, United Kingdom",
+  "verdict": "thunderstorms",
+  "window_hours": 24,
+  "temp_min_c": 18.5,
+  "temp_max_c": 23.8,
+  "reason": "The forecast for London, England, United Kingdom over the next 24 hours is thunderstorms, with temperatures from 18.5°C to 23.8°C..."
+}
+```
+
 ## Why this, and why this way
 
 **Both intents were chosen from live network data** — see
@@ -48,9 +62,17 @@ Verdicts: `none` `low` `moderate` `high` `severe` `unknown`
 Both are **Tier A** (deterministic, exact-match scoring) with only three incumbents each and a top
 score under 0.007 — nobody is doing well in either.
 
-`STORM_ALERT` was added after measuring demand: `SSL_VERIFICATION` has 17 lifetime requests across
-the network, `STORM_ALERT` has 334. Prize eligibility requires ≥100 real Track 3 requests **to the
-intent**, so ranking first in a dead intent pays nothing.
+Intents were added by measuring demand, because prize eligibility requires **≥100 real Track 3
+requests to the intent** — ranking first in a dead intent pays nothing:
+
+| Intent | Network requests | Miners | Bar to beat for rank 1 |
+|---|---|---|---|
+| `WEATHER_FORECAST` | **941** | 9 | 0.0080 |
+| `STORM_ALERT` | 334 | 3 | 0.0066 |
+| `SSL_VERIFICATION` | 17 | 3 | 0.0063 |
+
+Judging normalizes to the best miner *within* each intent, so rank 1 is worth the full 75 points
+regardless of absolute score. These are among the lowest bars on the board.
 
 **A handshake is not a CT lookup.** Certificate transparency reports what was *issued* for a
 domain. It cannot report what the server has *deployed*. Those disagree precisely when the question

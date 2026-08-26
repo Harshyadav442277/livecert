@@ -100,9 +100,9 @@ revealed the exact scoring split (**75% performance / 25% X**), and surfaced G13
 
 **Sharpened 2026-08-26 by live data:** `SSL_VERIFICATION` has **17 lifetime requests** across the
 whole network. The 100-request floor is not a formality there — it is most likely unreachable
-without manufacturing the traffic ourselves. Second mitigation added: the miner now also serves
-**`STORM_ALERT`** (334 requests, same 3-miner field, same near-zero top score), giving a second,
-far more plausible eligibility path. See [docs/MARKET_DATA.md](docs/MARKET_DATA.md).
+without manufacturing the traffic ourselves. Mitigated by breadth: the miner now also serves **`STORM_ALERT`** (334 requests, 3 miners) and
+**`WEATHER_FORECAST`** (941 requests — the network's highest — 9 miners, all scoring under 0.008),
+giving three independent eligibility paths instead of one. See [docs/MARKET_DATA.md](docs/MARKET_DATA.md).
 
 > An Intent must have at least 3 active Miners **and receive at least 100 real requests from
 > Track 3 applications** to be eligible for global cash prizes.

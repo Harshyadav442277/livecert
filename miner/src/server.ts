@@ -1,6 +1,7 @@
 import * as http from "node:http";
 import { checkCertificate, normalizeTarget, type SslResult } from "./ssl";
 import { checkStorm, type StormResult } from "./storm";
+import { getForecast, type ForecastResult } from "./forecast";
 
 const PORT = Number(process.env.PORT ?? 8080);
 const CACHE_TTL_MS = Number(process.env.CACHE_TTL_MS ?? 60_000);
@@ -11,9 +12,10 @@ const MAX_CACHE = 500;
  * repeat checks of the same host sub-millisecond without ever serving a stale
  * verdict for longer than the spot-check interval.
  */
-const cache = new Map<string, { at: number; value: SslResult | StormResult }>();
+type Answer = SslResult | StormResult | ForecastResult;
+const cache = new Map<string, { at: number; value: Answer }>();
 
-function fromCache(key: string): SslResult | StormResult | null {
+function fromCache(key: string): Answer | null {
   const hit = cache.get(key);
   if (!hit) return null;
   if (Date.now() - hit.at > CACHE_TTL_MS) {
@@ -23,7 +25,7 @@ function fromCache(key: string): SslResult | StormResult | null {
   return hit.value;
 }
 
-function toCache(key: string, value: SslResult | StormResult): void {
+function toCache(key: string, value: Answer): void {
   if (cache.size >= MAX_CACHE) {
     const oldest = cache.keys().next().value;
     if (oldest !== undefined) cache.delete(oldest);
@@ -54,6 +56,39 @@ const server = http.createServer((req, res) => {
   // reason outside this process.
   if (path === "/" || path === "/health") {
     send(res, 200, { status: "ok", service: "livecert", uptime_s: Math.floor(process.uptime()) });
+    return;
+  }
+
+  if (path === "/weather-forecast") {
+    const q =
+      url.searchParams.get("location") ??
+      url.searchParams.get("place") ??
+      url.searchParams.get("city") ??
+      url.searchParams.get("query") ??
+      "";
+    if (!q.trim()) {
+      send(res, 400, {
+        error: "invalid_location",
+        message: "Name a location. Example: /weather-forecast?location=London&hours=24",
+      });
+      return;
+    }
+    const hours = Number(url.searchParams.get("hours") ?? 24);
+    const window = Number.isFinite(hours) ? hours : 24;
+    const key = `fc:${q.trim().toLowerCase()}:${Math.floor(window)}`;
+    const hit = fromCache(key);
+    if (hit) {
+      send(res, 200, hit);
+      return;
+    }
+    getForecast(q, window)
+      .then((result) => {
+        toCache(key, result);
+        send(res, 200, result);
+      })
+      .catch((e: unknown) => {
+        send(res, 502, { error: "check_failed", message: (e as Error).message });
+      });
     return;
   }
 
@@ -91,7 +126,7 @@ const server = http.createServer((req, res) => {
   if (path !== "/ssl-check") {
     send(res, 404, {
       error: "not_found",
-      message: "Try /ssl-check?domain=example.com or /storm-alert?location=Chennai",
+      message: "Try /ssl-check?domain=example.com, /storm-alert?location=Chennai, or /weather-forecast?location=London",
     });
     return;
   }

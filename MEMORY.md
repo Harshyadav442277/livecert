@@ -104,9 +104,15 @@ Judging normalizes: **75 pts × (your score ÷ best score in your intent)** — 
 75 *regardless of absolute score*. The only number that matters is the bar in our own intent:
 
 ```
-STORM_ALERT       beat 0.0066   (held by bittensor-sn18-zeus, label_field: model)
-SSL_VERIFICATION  beat 0.0063   (held by txlens, label_field: status = "ok")
+WEATHER_FORECAST  beat 0.0080   941 network requests, 9 miners — all under 0.008
+STORM_ALERT       beat 0.0066   334 requests, 3 miners (leader maps label_field: model)
+SSL_VERIFICATION  beat 0.0063   17 requests,  3 miners (leader maps label_field: status = "ok")
 ```
+
+**The miner serves all three from one deployment** — `/ssl-check`, `/storm-alert`,
+`/weather-forecast`. One Fly app, one registration, three eligibility paths against G13.
+`WEATHER_FORECAST` was added last: highest demand on the whole network, and all nine incumbents
+score under 0.008. 37 tests passing.
 
 Both are the **lowest bars on the board**. Compare WEATHER_CHECK (0.768) or
 WALLET_BALANCE_CHECK (0.992), where a real incumbent already answers well.

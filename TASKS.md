@@ -46,8 +46,10 @@ position, so every day of delay shortens the record we are judged on.
 - [x] **T2.5** Both `SSL_VERIFICATION` and `STORM_ALERT` confirmed canonical against the live
       `/engine/v1/intents` set (45 intents). Re-verify with `isCanonicalIntent` before sending —
       one bad string reverts the whole transaction.
-- [x] **T2.7** Added `STORM_ALERT` after measuring demand → [docs/MARKET_DATA.md](docs/MARKET_DATA.md).
-      `/storm-alert` endpoint built, 32 tests passing, YAML declares both intents.
+- [x] **T2.7** Added `STORM_ALERT` and `WEATHER_FORECAST` after measuring demand →
+      [docs/MARKET_DATA.md](docs/MARKET_DATA.md). Three endpoints, **37 tests passing**, YAML
+      declares all three intents. `WEATHER_FORECAST` carries the network's highest demand (941
+      requests) with all nine incumbents under 0.008.
 - [ ] **T2.6** Sandbox-validate at `integrate.telegraphprotocol.com` until every endpoint passes. (A2)
 
 ## Phase 3 — Register (user drives all wallet steps)

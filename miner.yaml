@@ -3,7 +3,7 @@ kind: miner
 id: 4433
 slug: livecert
 protocol: generic
-name: LiveCert Infrastructure & Storm Signals
+name: LiveCert Operational Signals
 description: >-
   Two deterministic operational signals. /ssl-check performs a live TLS handshake
   against a domain and reports the certificate that host is actually serving right
@@ -14,6 +14,9 @@ description: >-
   severe-weather disruption risk for a named location over the next 48 hours,
   graded on Beaufort gust thresholds and thunderstorm forecasts, for logistics and
   risk agents that need to know about storms rather than current conditions.
+  /weather-forecast reports future conditions for a location over a stated window:
+  the expected condition in plain words, temperature range, total precipitation and
+  peak wind. All three answers are deterministic and independently checkable.
 base_url: https://livecert.fly.dev
 
 endpoints:
@@ -31,6 +34,13 @@ endpoints:
       Severe-weather risk for a location over the next 48 hours. Accepts a place
       name or "lat,lon".
 
+  - path: /weather-forecast
+    external_path: /weather-forecast
+    method: GET
+    description: >-
+      Future conditions for a location over a stated window (default 24h, max
+      168h). Accepts a place name or "lat,lon", plus an optional hours parameter.
+
 semantics:
   signal_mapping:
     label_field: verdict
@@ -39,6 +49,7 @@ semantics:
   supported_intents:
     - SSL_VERIFICATION
     - STORM_ALERT
+    - WEATHER_FORECAST
 
 # input_schema is a single top-level block covering every endpoint — the schema
 # refuses it inside endpoints[], and the node does not enforce it against requests.
@@ -54,8 +65,13 @@ input_schema:
     location:
       type: string
       description: >-
-        /storm-alert. Place name or "lat,lon".
+        /storm-alert and /weather-forecast. Place name or "lat,lon".
       examples: ["Chennai", "13.08,80.27"]
+    hours:
+      type: integer
+      description: >-
+        /weather-forecast only. Forecast window in hours; default 24, max 168.
+      examples: [24, 48]
 
 output_schema:
   type: object
@@ -68,7 +84,9 @@ output_schema:
         returns a storm-risk grade.
       enum:
         [valid, expired, not_yet_valid, hostname_mismatch, self_signed, untrusted,
-         unreachable, none, low, moderate, high, severe, unknown]
+         unreachable, none, low, moderate, high, severe, unknown, clear,
+         "mostly clear", cloudy, fog, drizzle, rain, "heavy rain", snow,
+         thunderstorms]
     valid: { type: boolean }
     trusted: { type: boolean }
     expired: { type: boolean }
@@ -92,6 +110,10 @@ output_schema:
     peak_at: { type: [string, "null"] }
     latitude: { type: [number, "null"] }
     longitude: { type: [number, "null"] }
+    temp_min_c: { type: [number, "null"] }
+    temp_max_c: { type: [number, "null"] }
+    total_precipitation_mm: { type: [number, "null"] }
+    precipitation_hours: { type: [integer, "null"] }
 
 docs:
   repository: https://github.com/Harshyadav442277/livecert

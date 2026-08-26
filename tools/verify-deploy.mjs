@@ -100,7 +100,25 @@ try {
   report(false, "missing location -> 400", e.message);
 }
 
-// 5. Input handling.
+// 5. Weather forecast — the third declared intent.
+console.log("\n  weather-forecast:");
+try {
+  const { res, ms } = await get(`/weather-forecast?location=London&hours=24`);
+  timings.push(ms);
+  const body = await res.json();
+  report(res.ok && body.verdict && body.verdict !== "unknown", "London -> condition", res.ok ? `got ${body.verdict}, ${ms}ms` : `HTTP ${res.status}`);
+  report(res.ok && body.temp_min_c !== null && body.temp_max_c >= body.temp_min_c, "temperature range is sane", `${body.temp_min_c} to ${body.temp_max_c}`);
+} catch (e) {
+  report(false, "London -> condition", e.message);
+}
+try {
+  const { res } = await get(`/weather-forecast`);
+  report(res.status === 400, "missing location -> 400", `got ${res.status}`);
+} catch (e) {
+  report(false, "missing location -> 400", e.message);
+}
+
+// 6. Input handling.
 console.log("\n  input handling:");
 try {
   const { res } = await get(`/ssl-check?domain=${encodeURIComponent("not a domain")}`);
@@ -116,7 +134,7 @@ try {
   report(false, "accepts a full URL via ?url=", e.message);
 }
 
-// 6. Latency. Spot checks run every ~20s and latency feeds the score.
+// 7. Latency. Spot checks run every ~20s and latency feeds the score.
 if (timings.length) {
   const sorted = [...timings].sort((a, b) => a - b);
   const p95 = sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))];
