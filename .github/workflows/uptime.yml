@@ -11,17 +11,24 @@
 
 name: uptime
 
-# Every 30 minutes: ~1,450 minutes/month, inside the 2,000 free-tier allowance for a
-# PRIVATE repo. Public repos get unlimited Actions minutes — if this repo is made
-# public, tighten this to "*/10 * * * *" for faster revocation detection.
+# No schedule. The canonical miner repo (Harshyadav442277/miner) watches the same
+# deployment on a schedule, with an alarm that opens an issue and a resolve job
+# that closes it. Two crons on one URL meant this repo mailed a failure every few
+# hours for seventeen days while the deployment was healthy the whole time. This
+# stays dispatch-only, for checking the repo's own claim by hand.
 on:
-  schedule:
-    - cron: "*/30 * * * *"
   workflow_dispatch:
 
 jobs:
   check:
     runs-on: ubuntu-latest
+    # Explicit, because the alarm depends on it: the issue-opening step below needs
+    # issues: write. Without it the step got 403 "Resource not accessible by
+    # integration" on every failure, so the outage never became an issue — only an
+    # email.
+    permissions:
+      contents: read
+      issues: write
     steps:
       - uses: actions/checkout@v4
 
