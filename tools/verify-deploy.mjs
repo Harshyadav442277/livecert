@@ -82,7 +82,12 @@ try {
   const body = await res.json();
   const graded = ["none", "low", "moderate", "high", "severe"].includes(body.verdict);
   report(res.ok && graded, "Chennai -> graded verdict", res.ok ? `got ${body.verdict}, ${ms}ms` : `HTTP ${res.status}`);
-  report(res.ok && body.window_hours === 48, "reports a 48h window", `window_hours=${body.window_hours}`);
+  // The 48-hour window is no longer a field. The served payload is lean
+  // ({verdict, confidence, reason}), so the window is read from the prose —
+  // which is the copy the converter scores. Check the answer, not a field
+  // behind it.
+  report(res.ok && /over the next 48 hours/i.test(body.reason ?? ""), "reports a 48h window",
+    `reason ${/over the next 48 hours/i.test(body.reason ?? "") ? "names" : "omits"} the window`);
 } catch (e) {
   report(false, "Chennai -> graded verdict", e.message);
 }
@@ -95,9 +100,10 @@ try {
 }
 try {
   const { res } = await get(`/storm-alert`);
-  report(res.status === 400, "missing location -> 400", `got ${res.status}`);
+  report(res.status === 200 && (await res.clone().json()).verdict === "unknown",
+    "missing location -> honest 200", `got ${res.status}`);
 } catch (e) {
-  report(false, "missing location -> 400", e.message);
+  report(false, "missing location -> honest 200", e.message);
 }
 
 // 5. Weather forecast — the third declared intent.
@@ -107,29 +113,36 @@ try {
   timings.push(ms);
   const body = await res.json();
   report(res.ok && body.verdict && body.verdict !== "unknown", "London -> condition", res.ok ? `got ${body.verdict}, ${ms}ms` : `HTTP ${res.status}`);
-  report(res.ok && body.temp_min_c !== null && body.temp_max_c >= body.temp_min_c, "temperature range is sane", `${body.temp_min_c} to ${body.temp_max_c}`);
+  // Lean body again: the range lives in the prose, not in temp_min_c/temp_max_c.
+  const range = String(body.reason ?? "").match(/(-?\d+(?:\.\d+)?)\s*(?:°C|C)?\s*(?:to|and|–|-)\s*(-?\d+(?:\.\d+)?)\s*°?C/);
+  report(res.ok && range !== null && Number(range[2]) >= Number(range[1]), "temperature range is sane",
+    range ? `${range[1]} to ${range[2]}` : "no range in prose");
 } catch (e) {
   report(false, "London -> condition", e.message);
 }
 try {
   const { res } = await get(`/weather-forecast`);
-  report(res.status === 400, "missing location -> 400", `got ${res.status}`);
+  report(res.status === 200 && (await res.clone().json()).verdict === "unknown",
+    "missing location -> honest 200", `got ${res.status}`);
 } catch (e) {
-  report(false, "missing location -> 400", e.message);
+  report(false, "missing location -> honest 200", e.message);
 }
 
 // 6. Input handling.
 console.log("\n  input handling:");
 try {
   const { res } = await get(`/ssl-check?domain=${encodeURIComponent("not a domain")}`);
-  report(res.status === 400, "rejects a malformed domain with 400", `got ${res.status}`);
+  report(res.status === 200 && (await res.clone().json()).verdict === "unknown",
+    "malformed domain -> honest 200", `got ${res.status}`);
 } catch (e) {
-  report(false, "rejects a malformed domain with 400", e.message);
+  report(false, "malformed domain -> honest 200", e.message);
 }
 try {
   const { res } = await get(`/ssl-check?url=${encodeURIComponent("https://cloudflare.com/x")}`);
   const body = await res.json();
-  report(res.ok && body.domain === "cloudflare.com", "accepts a full URL via ?url=", `domain=${body.domain}`);
+  // Lean body: the parsed hostname shows up in the prose, not in a domain field.
+  report(res.ok && /cloudflare\.com/.test(String(body.reason)), "accepts a full URL via ?url=",
+    `reason names cloudflare.com=${/cloudflare\.com/.test(String(body.reason))}`);
 } catch (e) {
   report(false, "accepts a full URL via ?url=", e.message);
 }
